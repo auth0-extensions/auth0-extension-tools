@@ -29,10 +29,11 @@ tools.validateHookToken = function(domain, webtaskUrl, hookPath, extensionSecret
   }
 
   try {
-    return jwt.verify(hookToken, extensionSecret, {
+    jwt.verify(hookToken, extensionSecret, {
       audience: path.join(webtaskUrl, hookPath),
       issuer: 'https://' + domain
     });
+    return true;
   } catch (e) {
     return false;
   }
