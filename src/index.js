@@ -7,19 +7,21 @@ const tools = module.exports = { };
  * Helper to turn the current webtaskContext which contains params/secrets into a config provider.
  * A config provider is just a method which returns a setting for a given key.
  */
-tools.toConfigProvider = (webtaskContext) => {
+tools.toConfigProvider = function(webtaskContext) {
   const settings = _.assign({ }, process.env, webtaskContext.params, webtaskContext.secrets, {
     NODE_ENV: 'production',
     HOSTING_ENV: 'webtask'
   });
 
-  return (key) => settings[key];
+  return function(key) {
+    return settings[key];
+  };
 };
 
 /*
  * Bootstrap function to run initialize a server (connect, express, ...).
  */
-tools.createServer = (cb) => {
+tools.createServer = function(cb) {
   let server = null;
 
   return (req, res) => {
@@ -35,9 +37,13 @@ tools.createServer = (cb) => {
 /*
  * Bootstrap function to run initialize an Express server.
  */
-tools.createExpressServer = (cb) => Webtask.fromExpress(tools.createServer(cb));
+tools.createExpressServer = function(cb) {
+  return Webtask.fromExpress(tools.createServer(cb));
+};
 
 /*
  * Bootstrap function to run initialize a Hapi server.
  */
-tools.createHapiServer = (cb) => Webtask.fromHapi(tools.createServer(cb));
+tools.createHapiServer = function(cb) {
+  return Webtask.fromHapi(tools.createServer(cb));
+}

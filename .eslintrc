@@ -1,16 +1,11 @@
 {
-  "extends": "airbnb",
+  "extends": "airbnb/base",
   "ecmaFeatures": {
-    "jsx": true,
     "modules": true
   },
   "env": {
-    "browser": true,
-    "node": true,
-    "es6": true,
-    "mocha": true
+    "node": true
   },
-  "parser": "babel-eslint",
   "rules": {
     "max-len": 0,
     "react/display-name": 0,
@@ -20,7 +15,6 @@
     "indent": [2, 2, {
       "SwitchCase": 1
     }],
-    "jsx-quotes": [2, "prefer-double"],
     "new-cap": 0,
     "no-multiple-empty-lines": 2,
     "no-unused-vars": 2,
@@ -34,9 +28,5 @@
       "anonymous": "always",
       "named": "never"
     }]
-  },
-  "plugins": [
-    "react",
-    "babel"
-  ]
+  }
 }

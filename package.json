@@ -1,6 +1,6 @@
 {
   "name": "auth0-extension-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
@@ -9,7 +9,8 @@
   },
   "devDependencies": {
     "eslint": "^3.2.2",
-    "eslint-config-airbnb": "^10.0.0"
+    "eslint-config-airbnb": "^10.0.0",
+    "eslint-plugin-import": "^1.12.0"
   },
   "scripts": {
     "release": "git tag $npm_package_version && git push && git push --tags && npm publish"
