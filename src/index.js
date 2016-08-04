@@ -30,7 +30,7 @@ tools.validateHookToken = function(domain, webtaskUrl, hookPath, extensionSecret
 
   try {
     jwt.verify(hookToken, extensionSecret, {
-      audience: path.join(webtaskUrl, hookPath),
+      audience: webtaskUrl + hookPath,
       issuer: 'https://' + domain
     });
     return true;
@@ -38,6 +38,7 @@ tools.validateHookToken = function(domain, webtaskUrl, hookPath, extensionSecret
     return false;
   }
 };
+
 
 /*
  * Bootstrap function to run initialize a server (connect, express, ...).
