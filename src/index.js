@@ -1,4 +1,6 @@
 const _ = require('lodash');
+const path = require('path');
+const jwt = require('jsonwebtoken');
 const Webtask = require('webtask-tools');
 
 const tools = module.exports = { };
@@ -16,6 +18,24 @@ tools.toConfigProvider = function toConfigProvider(webtaskContext) {
   return function getSettings(key) {
     return settings[key];
   };
+};
+
+/*
+ * Validate a token for webtask hooks.
+ */
+tools.validateHookToken = function(domain, webtaskUrl, hookPath, extensionSecret, hookToken) {
+  if (!hookToken) {
+    return false;
+  }
+
+  try {
+    return jwt.verify(hookToken, extensionSecret, {
+      audience: path.join(webtaskUrl, hookPath),
+      issuer: 'https://' + domain
+    });
+  } catch (e) {
+    return false;
+  }
 };
 
 /*
