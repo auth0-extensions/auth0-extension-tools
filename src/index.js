@@ -24,9 +24,9 @@ tools.toConfigProvider = function toConfigProvider(webtaskContext) {
 tools.createServer = function createServer(cb) {
   var server = null;
 
-  return (req, res) => {
+  return function requestHandler(req, res) {
     if (!server) {
-      var configProvider = tools.toConfigProvider(req.webtaskContext);
+      const configProvider = tools.toConfigProvider(req.webtaskContext);
       server = cb(req, configProvider, req.webtaskContext.storage);
     }
 
