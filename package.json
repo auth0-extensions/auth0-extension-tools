@@ -1,0 +1,32 @@
+{
+  "name": "auth0-extension-tools",
+  "version": "0.1.0",
+  "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
+  "main": "src/index.js",
+  "dependencies": {
+    "lodash": "^4.14.1",
+    "webtask-tools": "^2.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.2.2",
+    "eslint-config-airbnb": "^10.0.0"
+  },
+  "scripts": {
+    "release": "git tag $npm_package_version && git push && git push --tags && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auth0-extensions/auth0-extension-tools.git"
+  },
+  "keywords": [
+    "auth0",
+    "extensions",
+    "webtask"
+  ],
+  "author": "Auth0",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/auth0-extensions/auth0-extension-tools/issues"
+  },
+  "homepage": "https://github.com/auth0-extensions/auth0-extension-tools#readme"
+}
