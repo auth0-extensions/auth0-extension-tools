@@ -1,7 +1,13 @@
 const tape = require('tape');
 
+const extensionTools = require('../../src');
 const configFactory = require('../../src/config/configFactory');
 const configProvider = require('../../src/config/configProvider');
+
+tape('extension-tools should expose the configFactory', function(t) {
+  t.ok(extensionTools.config === configFactory);
+  t.end();
+});
 
 tape('configFactory should wrap provider', function(t) {
   const provider = configProvider.fromWebtaskContext({

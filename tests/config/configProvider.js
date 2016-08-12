@@ -1,7 +1,13 @@
 const tape = require('tape');
 
 const errors = require('../../src/errors');
+const extensionTools = require('../../src');
 const configProvider = require('../../src/config/configProvider');
+
+tape('extension-tools should expose the configProvider', function(t) {
+  t.ok(extensionTools.configProvider === configProvider);
+  t.end();
+});
 
 tape('configProvider#fromWebtaskContext should require a context', function(t) {
   try {
