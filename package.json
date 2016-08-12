@@ -4,17 +4,26 @@
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
+    "auth0": "^2.3.1",
+    "bluebird": "^3.4.1",
     "jsonwebtoken": "^7.1.7",
     "lodash": "^4.14.1",
+    "node-uuid": "^1.4.7",
     "webtask-tools": "^2.2.0"
   },
   "devDependencies": {
     "eslint": "^3.2.2",
     "eslint-config-airbnb": "^10.0.0",
-    "eslint-plugin-import": "^1.12.0"
+    "eslint-plugin-import": "^1.12.0",
+    "faucet": "0.0.1",
+    "mock-fs": "^3.11.0",
+    "nyc": "^7.1.0",
+    "tape": "^4.6.0"
   },
   "scripts": {
-    "release": "git tag $npm_package_version && git push && git push --tags && npm publish"
+    "release": "git tag $npm_package_version && git push && git push --tags && npm publish",
+    "test": "./node_modules/tape/bin/tape tests/**/*.js | ./node_modules/faucet/bin/cmd.js",
+    "test:coverage": "./node_modules/nyc/bin/nyc.js ./node_modules/tape/bin/tape tests/**/*.js | ./node_modules/faucet/bin/cmd.js && ./node_modules/nyc/bin/nyc.js report"
   },
   "repository": {
     "type": "git",
