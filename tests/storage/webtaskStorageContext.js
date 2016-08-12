@@ -96,7 +96,6 @@ tape('WebtaskStorageContext#write should handle errors correctly when writing pr
     });
 });
 
-
 tape('WebtaskStorageContext#write should handle errors correctly when writing fails', function(t) {
   const storage = webtaskStorage(new Error('foo'));
 
