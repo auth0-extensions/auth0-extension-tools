@@ -5,6 +5,11 @@ const storage = require('./storage');
 const tools = module.exports = { };
 
 /*
+ * Helper for the Management Api.
+ */
+tools.managementApi = require('./auth0/managementApi');
+
+/*
  * Storage helpers.
  */
 tools.FileStorageContext = storage.FileStorageContext;
