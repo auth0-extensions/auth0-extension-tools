@@ -4,7 +4,7 @@ A set of tools and utilities to simplify the development of Auth0 Extensions.
 
 ## Usage
 
-```
+```js
 const tools = require('auth0-extension-tools');
 ```
 

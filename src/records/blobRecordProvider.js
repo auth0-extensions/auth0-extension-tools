@@ -12,7 +12,6 @@ const getDataForCollection = function(storageContext, collectionName) {
     });
 };
 
-
 /**
  * Create a new BlobRecordProvider.
  * @param {Object} storageContext The storage context.
