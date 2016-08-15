@@ -1,8 +1,18 @@
 const Webtask = require('webtask-tools');
 
+const errors = require('./errors');
 const storage = require('./storage');
 
 const tools = module.exports = { };
+
+/*
+ * Errors exposed by the library.
+ */
+tools.ArgumentError = errors.ArgumentError;
+tools.HookTokenError = errors.HookTokenError;
+tools.ManagementApiError = errors.ManagementApiError;
+tools.NotFoundError = errors.NotFoundError;
+tools.ValidationError = errors.ValidationError;
 
 /*
  * Helper for the Management Api.

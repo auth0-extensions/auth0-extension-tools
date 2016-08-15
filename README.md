@@ -91,12 +91,12 @@ const mySetting = config('some_setting');
 The following errors are also available (in case you need to throw or handle specific errors):
 
 ```js
-const errors = require('auth0-extension-tools').errors;
-errors.ArgumentError
-errors.HookTokenError
-errors.ManagementApiError
-errors.NotFoundError
-errors.ValidationError
+const tools = require('auth0-extension-tools');
+tools.ArgumentError
+tools.HookTokenError
+tools.ManagementApiError
+tools.NotFoundError
+tools.ValidationError
 ```
 
 ### Hooks
