@@ -225,7 +225,12 @@ tape('FileStorageContext#write should handle errors correctly when writing probl
 });
 
 tape('FileStorageContext#write should handle errors correctly when write permissions are denied', function(t) {
-  const filePath = path.join(__dirname, './data.json');
+  // mock-fs and permissions seem to have issues when running in docker
+  if (fs.existsSync('/.dockerenv')) {
+    return t.end();
+  }
+
+  const filePath = '/foo/bar.json';
   mock({
     [filePath]: mock.file({
       content: '{ "application": "my-app" }',
@@ -234,9 +239,12 @@ tape('FileStorageContext#write should handle errors correctly when write permiss
   });
 
   const ctx = new FileStorageContext(filePath, { mergeWrites: true });
-  ctx.write({ version: '123' })
+  return ctx.write({ version: '123' })
+    .then(function() {
+      t.fail('Should not write the file.');
+    })
     .catch(function(err) {
-      t.ok(err);
+      t.ok(err, 'should throw error');
       t.end();
       mock.restore();
     });
