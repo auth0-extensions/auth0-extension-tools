@@ -57,7 +57,7 @@ const getAccessTokenCached = Promise.promisify(
         const expiresIn = new Date(0);
         expiresIn.setUTCSeconds(decodedToken.exp);
         const now = new Date().valueOf();
-        return expiresIn.valueOf() - now;
+        return (expiresIn.valueOf() - now) - 10000;
       } catch (e) {
         return 1000;
       }

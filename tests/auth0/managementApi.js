@@ -128,7 +128,7 @@ tape('managementApi#getAccessTokenCache should cache the access token', function
 tape('managementApi#getAccessTokenCache should cache the access token based on its expiration', function(t) {
   t.timeoutAfter(10000);
 
-  const token = jwt.sign({ foo: 'bar' }, 'shhhhh', { expiresIn: '4s' });
+  const token = jwt.sign({ foo: 'bar' }, 'shhhhh', { expiresIn: '14s' });
 
   nock('https://tenant.auth0cluster3.com')
     .post('/oauth/token')
