@@ -1,5 +1,6 @@
 const tape = require('tape');
 const nock = require('nock');
+const jwt = require('jsonwebtoken');
 
 const extensionTools = require('../../src');
 const ArgumentError = require('../../src/errors').ArgumentError;
@@ -121,6 +122,48 @@ tape('managementApi#getAccessTokenCache should cache the access token', function
               nock.cleanAll();
             });
         });
+    });
+});
+
+tape('managementApi#getAccessTokenCache should cache the access token based on its expiration', function(t) {
+  t.timeoutAfter(10000);
+
+  const token = jwt.sign({ foo: 'bar' }, 'shhhhh', { expiresIn: '4s' });
+
+  nock('https://tenant.auth0cluster3.com')
+    .post('/oauth/token')
+    .reply(200, {
+      access_token: token
+    });
+
+  managementApi.getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
+    .then(function(accessToken) {
+      t.ok(accessToken);
+      t.equal(accessToken, token);
+
+      setTimeout(function() {
+        managementApi.getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
+          .then(function(accessToken2) {
+            t.ok(accessToken2);
+            t.equal(accessToken2, token);
+
+            nock('https://tenant.auth0cluster3.com')
+              .post('/oauth/token')
+              .reply(200, {
+                access_token: 'def'
+              });
+
+            setTimeout(function() {
+              managementApi.getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
+                .then(function(accessToken3) {
+                  t.ok(accessToken3);
+                  t.equal(accessToken3, 'def');
+                  t.end();
+                  nock.cleanAll();
+                });
+            }, 2000);
+          });
+      }, 3000);
     });
 });
 

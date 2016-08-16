@@ -1,4 +1,5 @@
 const ms = require('ms');
+const jwt = require('jsonwebtoken');
 const auth0 = require('auth0');
 const Promise = require('bluebird');
 const memoizer = require('lru-memoizer');
@@ -49,6 +50,17 @@ const getAccessTokenCached = Promise.promisify(
     },
     hash: function(domain, clientId, clientSecret) {
       return domain + '-' + clientId + '-' + clientSecret;
+    },
+    itemMaxAge: function(domain, clientId, clientSecret, accessToken) {
+      try {
+        const decodedToken = jwt.decode(accessToken);
+        const expiresIn = new Date(0);
+        expiresIn.setUTCSeconds(decodedToken.exp);
+        const now = new Date().valueOf();
+        return expiresIn.valueOf() - now;
+      } catch (e) {
+        return 1000;
+      }
     },
     max: 100,
     maxAge: ms('1h')
