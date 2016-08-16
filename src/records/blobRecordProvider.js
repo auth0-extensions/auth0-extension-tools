@@ -46,7 +46,7 @@ BlobRecordProvider.prototype.getAll = function(collectionName) {
 BlobRecordProvider.prototype.get = function(collectionName, identifier) {
   return this.getAll(collectionName)
     .then(function(records) {
-      const record = _.find(records, (r) => r._id === identifier);
+      const record = _.find(records, function(r) { return r._id === identifier });
       if (!record) {
         return Promise.reject(
           new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.')
@@ -71,7 +71,7 @@ BlobRecordProvider.prototype.create = function(collectionName, record) {
         record._id = uuid.v4();
       }
 
-      const index = _.findIndex(data[collectionName], (r) => r._id === record._id);
+      const index = _.findIndex(data[collectionName], function(r) { return r._id === record._id; });
       if (index > -1) {
         return Promise.reject(
           new ValidationError('The record ' + record._id + ' in ' + collectionName + ' already exists.')
@@ -101,7 +101,7 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
   const storageContext = this.storageContext;
   return getDataForCollection(storageContext, collectionName)
     .then(function(data) {
-      const index = _.findIndex(data[collectionName], (r) => r._id === identifier);
+      const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
       if (index < 0 && !upsert) {
         throw new NotFoundError(`The record '${identifier}' in '${collectionName}' does not exist.`);
       }
@@ -131,7 +131,7 @@ BlobRecordProvider.prototype.delete = function(collectionName, identifier) {
   const storageContext = this.storageContext;
   return getDataForCollection(storageContext, collectionName)
     .then(function(data) {
-      const index = _.findIndex(data[collectionName], (r) => r._id === identifier);
+      const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
       if (index < 0) {
         return false;
       }
