@@ -9,9 +9,11 @@ const tools = module.exports = { };
  * Errors exposed by the library.
  */
 tools.ArgumentError = errors.ArgumentError;
+tools.ForbiddenError = errors.ForbiddenError;
 tools.HookTokenError = errors.HookTokenError;
 tools.ManagementApiError = errors.ManagementApiError;
 tools.NotFoundError = errors.NotFoundError;
+tools.UnauthorizedError = errors.UnauthorizedError;
 tools.ValidationError = errors.ValidationError;
 
 /*

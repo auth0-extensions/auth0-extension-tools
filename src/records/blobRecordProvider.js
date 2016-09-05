@@ -103,7 +103,7 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
     .then(function(data) {
       const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
       if (index < 0 && !upsert) {
-        throw new NotFoundError(`The record '${identifier}' in '${collectionName}' does not exist.`);
+        throw new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.');
       }
 
       // Update record.
