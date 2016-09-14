@@ -44,3 +44,48 @@ tape('configProvider#fromWebtaskContext should require a context', function(t) {
   t.equal(provider('Setting'), 789);
   t.end();
 });
+
+tape('configProvider#fromWebtaskContext should return default RTA', function(t) {
+  process.env.ENV1 = 'envValue';
+  process.env.Setting = 123;
+
+  const provider = configProvider.fromWebtaskContext({
+    params: {
+      a: 'value1',
+      b: 'value2',
+      Setting: 456
+    },
+    secrets: {
+      user: 'usr',
+      password: 'pwd',
+      Setting: 789
+    }
+  });
+
+  t.ok(provider);
+  t.equal(provider('AUTH0_RTA'), 'auth0.auth0.com');
+  t.end();
+});
+
+tape('configProvider#fromWebtaskContext should allow overwriting the RTA', function(t) {
+  process.env.ENV1 = 'envValue';
+  process.env.Setting = 123;
+
+  const provider = configProvider.fromWebtaskContext({
+    params: {
+      a: 'value1',
+      b: 'value2',
+      Setting: 456
+    },
+    secrets: {
+      user: 'usr',
+      password: 'pwd',
+      Setting: 789,
+      AUTH0_RTA: 'login.myappliance.local'
+    }
+  });
+
+  t.ok(provider);
+  t.equal(provider('AUTH0_RTA'), 'login.myappliance.local');
+  t.end();
+});
