@@ -6,7 +6,15 @@ const ArgumentError = require('./errors').ArgumentError;
 const UnauthorizedError = require('./errors').UnauthorizedError;
 const ValidationError = require('./errors').ValidationError;
 
-function SessionManager(domain, clientId) {
+function SessionManager(rta, domain, clientId) {
+  if (rta === null || rta === undefined) {
+    throw new ArgumentError('Must provide a valid domain');
+  }
+
+  if (typeof rta !== 'string' || rta.length === 0) {
+    throw new ArgumentError('The provided rta is invalid: ' + rta);
+  }
+
   if (domain === null || domain === undefined) {
     throw new ArgumentError('Must provide a valid domain');
   }
@@ -16,7 +24,7 @@ function SessionManager(domain, clientId) {
   }
 
   if (clientId === null || clientId === undefined) {
-    throw new ArgumentError('Must provide a valid domain');
+    throw new ArgumentError('Must provide a valid clientId');
   }
 
   if (typeof clientId !== 'string' || clientId.length === 0) {
@@ -24,6 +32,7 @@ function SessionManager(domain, clientId) {
   }
 
   this.options = {
+    rta: rta,
     domain: domain,
     clientId: clientId
   };
@@ -32,12 +41,42 @@ function SessionManager(domain, clientId) {
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 10,
-    jwksUri: 'https://' + domain + '/.well-known/jwks.json'
+    jwksUri: 'https://' + rta + '/.well-known/jwks.json'
   });
   this.managementApiAudience = 'https://' + domain + '/api/v2/';
 }
 
-SessionManager.prototype.validateToken = function(client, domain, audience, token) {
+SessionManager.prototype.createAuthorizeUrl = function(options) {
+  if (options === null || options === undefined) {
+    return Promise.reject(new ArgumentError('Must provide the options'));
+  }
+
+  if (options.redirectUri === null || options.redirectUri === undefined) {
+    return Promise.reject(new ArgumentError('Must provide the redirectUri'));
+  }
+
+  if (typeof options.redirectUri !== 'string' || options.redirectUri.length === 0) {
+    return Promise.reject(new ArgumentError('The provided redirectUri is invalid: ' + options.redirectUri));
+  }
+
+  var scopes = 'openid name email';
+  if (options.scopes && options.scopes.length) {
+    scopes += ' ' + options.scopes;
+  }
+
+  return [
+    'https://' + this.options.rta + '/i/oauth2/authorize',
+    '?client_id=' + encodeURIComponent(this.options.clientId),
+    '&response_type=token',
+    '&response_mode=form_post',
+    '&scope=' + encodeURIComponent(scopes),
+    '&expiration=' + (options.expiration || 36000),
+    '&redirect_uri=' + encodeURIComponent(options.redirectUri),
+    '&audience=' + encodeURIComponent(this.managementApiAudience)
+  ].join('');
+};
+
+SessionManager.prototype.validateToken = function(client, audience, token) {
   const self = this;
   return new Promise(function(resolve, reject) {
     const decoded = jwt.decode(token, { complete: true });
@@ -56,7 +95,7 @@ SessionManager.prototype.validateToken = function(client, domain, audience, toke
           return reject(err);
         }
 
-        if (payload.iss !== 'https://' + domain + '/') {
+        if (payload.iss !== 'https://' + self.options.rta + '/') {
           return reject(new UnauthorizedError('Invalid issuer: ' + payload.iss));
         }
 
@@ -92,7 +131,7 @@ SessionManager.prototype.create = function(idToken, accessToken, options) {
   }
 
   if (options === null || options === undefined) {
-    return Promise.reject(new ArgumentError('Must provide the tokenOptions'));
+    return Promise.reject(new ArgumentError('Must provide the options'));
   }
 
   if (options.secret === null || options.secret === undefined) {
@@ -121,8 +160,8 @@ SessionManager.prototype.create = function(idToken, accessToken, options) {
 
   const self = this;
   return Promise.all([
-    self.validateToken(self.options.clientId, self.options.domain, self.options.clientId, idToken),
-    self.validateToken(self.options.clientId, self.options.domain, self.managementApiAudience, accessToken)
+    self.validateToken(self.options.clientId, self.options.clientId, idToken),
+    self.validateToken(self.options.clientId, self.managementApiAudience, accessToken)
   ])
     .then(function(tokens) {
       if (tokens[1].azp !== self.options.clientId) {

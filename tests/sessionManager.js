@@ -10,8 +10,59 @@ const tokenOptions = {
   audience: 'urn:authz'
 };
 
+tape('SessionManager#createAuthorizeUrl should return the authorize url', function(t) {
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
+  const url = sessionManager.createAuthorizeUrl({
+    redirectUri: 'http://foo.bar.com/login/callback'
+  });
+
+  const expectedUrl = 'https://auth0.auth0.com/i/oauth2/authorize?client_id=' +
+    'http%3A%2F%2Ffoo.bar.com' +
+    '&response_type=token&response_mode=form_post&scope=openid%20name%20email' +
+    '&expiration=36000&redirect_uri=' +
+    'http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback&' +
+    'audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F';
+  t.ok(url === expectedUrl);
+  t.end();
+});
+
+tape('SessionManager#createAuthorizeUrl should set custom scopes', function(t) {
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
+  const url = sessionManager.createAuthorizeUrl({
+    redirectUri: 'http://foo.bar.com/login/callback',
+    scopes: 'read:clients read:connections'
+  });
+
+  const expectedUrl = 'https://auth0.auth0.com/i/oauth2/authorize?client_id=' +
+    'http%3A%2F%2Ffoo.bar.com' +
+    '&response_type=token&response_mode=form_post&scope=openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
+    '&expiration=36000&redirect_uri=' +
+    'http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback&' +
+    'audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F';
+  t.ok(url === expectedUrl);
+  t.end();
+});
+
+tape('SessionManager#createAuthorizeUrl should set custom expiration', function(t) {
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
+  const url = sessionManager.createAuthorizeUrl({
+    redirectUri: 'http://foo.bar.com/login/callback',
+    scopes: 'read:clients read:connections',
+    expiration: 1
+  });
+
+  const expectedUrl = 'https://auth0.auth0.com/i/oauth2/authorize?client_id=' +
+    'http%3A%2F%2Ffoo.bar.com' +
+    '&response_type=token&response_mode=form_post&scope=openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
+    '&expiration=1&redirect_uri=' +
+    'http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback&' +
+    'audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F';
+  t.ok(url === expectedUrl);
+  t.end();
+});
+
 tape('SessionManager#create validate options', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', null)
     .then(function(data) {
       t.notOk(data);
@@ -25,7 +76,7 @@ tape('SessionManager#create validate options', function(t) {
 });
 
 tape('SessionManager#create validate options.audience', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', { audience: null, secret: 'foo', issuer: 'foo' })
     .then(function(data) {
       t.notOk(data);
@@ -39,7 +90,7 @@ tape('SessionManager#create validate options.audience', function(t) {
 });
 
 tape('SessionManager#create validate options.audience length', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', { audience: '', secret: 'foo', issuer: 'foo' })
     .then(function(data) {
       t.notOk(data);
@@ -53,7 +104,7 @@ tape('SessionManager#create validate options.audience length', function(t) {
 });
 
 tape('SessionManager#create validate options.issuer', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', { audience: 'aa', secret: 'foo', issuer: null })
     .then(function(data) {
       t.notOk(data);
@@ -67,7 +118,7 @@ tape('SessionManager#create validate options.issuer', function(t) {
 });
 
 tape('SessionManager#create validate options.issuer length', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', { audience: 'aa', secret: 'foo', issuer: '' })
     .then(function(data) {
       t.notOk(data);
@@ -81,7 +132,7 @@ tape('SessionManager#create validate options.issuer length', function(t) {
 });
 
 tape('SessionManager#create validate options.secret', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', { audience: 'aa', issuer: 'bb', secret: null })
     .then(function(data) {
       t.notOk(data);
@@ -95,7 +146,7 @@ tape('SessionManager#create validate options.secret', function(t) {
 });
 
 tape('SessionManager#create validate options.secret length', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('a', 'b', { audience: 'aa', issuer: 'bb', secret: '' })
     .then(function(data) {
       t.notOk(data);
@@ -109,7 +160,7 @@ tape('SessionManager#create validate options.secret length', function(t) {
 });
 
 tape('SessionManager#create should return error if id_token is null', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create()
     .then(function(data) {
       t.notOk(data);
@@ -133,7 +184,7 @@ tape('SessionManager#create should return error if id_token is null', function(t
 });
 
 tape('SessionManager#create should return error if id_token is invalid', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('xyz', 'xyz', tokenOptions)
     .then(function(data) {
       t.notOk(data);
@@ -147,7 +198,7 @@ tape('SessionManager#create should return error if id_token is invalid', functio
 });
 
 tape('SessionManager#create should return error if access_token is null', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create('x')
     .then(function(data) {
       t.notOk(data);
@@ -171,7 +222,7 @@ tape('SessionManager#create should return error if access_token is null', functi
 });
 
 tape('SessionManager#create should return error if access_token is invalid', function(t) {
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create(tokens.sign(certs.bar.private, 'key1', { sub: 'foo' }), 'xyz', tokenOptions)
     .then(function(data) {
       t.notOk(data);
@@ -187,7 +238,7 @@ tape('SessionManager#create should return error if access_token is invalid', fun
 tape('SessionManager#create should return error if kid for id_token is invalid', function(t) {
   tokens.wellKnownEndpoint('me.auth0.local', certs.bar.cert, 'key2');
 
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create(tokens.sign(certs.bar.private, 'key1', { sub: 'foo' }), tokens.sign(certs.bar.private, 'key1', { sub: 'bar' }), tokenOptions)
     .then(function(data) {
       t.notOk(data);
@@ -201,9 +252,9 @@ tape('SessionManager#create should return error if kid for id_token is invalid',
 });
 
 tape('SessionManager#create should return error if kid for access_token is invalid', function(t) {
-  tokens.wellKnownEndpoint('me.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('me.auth0.local', certs.bar.cert, 'key2');
-  const sessionManager = new tools.SessionManager('me.auth0.local', 'http://foo.bar.com');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   sessionManager.create(tokens.sign(certs.bar.private, 'key2', { sub: 'foo' }), tokens.sign(certs.bar.private, 'key1', { sub: 'bar' }), tokenOptions)
     .then(function(data) {
       t.notOk(data);
@@ -217,8 +268,8 @@ tape('SessionManager#create should return error if kid for access_token is inval
 });
 
 tape('SessionManager#create should return error if iss of id_token is incorrect', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.bar.private, 'key2', {
     iss: 'https://othertenant.auth0.local/',
@@ -226,7 +277,7 @@ tape('SessionManager#create should return error if iss of id_token is incorrect'
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'bar',
     azp: 'http://app.bar.com',
     aud: [
@@ -235,7 +286,7 @@ tape('SessionManager#create should return error if iss of id_token is incorrect'
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -246,13 +297,13 @@ tape('SessionManager#create should return error if iss of id_token is incorrect'
 });
 
 tape('SessionManager#create should return error if iss of access_token is incorrect', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
-  const idToken = tokens.sign(certs.bar.private, 'key2', { iss: 'https://bar.auth0.local/', sub: 'foo' });
+  const idToken = tokens.sign(certs.bar.private, 'key2', { iss: 'https://auth0.auth0.com/', sub: 'foo' });
   const accessToken = tokens.sign(certs.bar.private, 'key2', { iss: 'https://foo2.auth0.local/', sub: 'bar' });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -263,21 +314,21 @@ tape('SessionManager#create should return error if iss of access_token is incorr
 });
 
 tape('SessionManager#create should return error if aud of id_token is incorrect', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     aud: 'http://othertenant.bar.com',
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'bar',
     aud: 'https://bar.auth0.local/api/v2/'
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -288,16 +339,16 @@ tape('SessionManager#create should return error if aud of id_token is incorrect'
 });
 
 tape('SessionManager#create should return error if aud of access_token is incorrect', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     aud: 'http://app.bar.com',
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'bar',
     azp: 'http://app.bar.com',
     aud: [
@@ -306,7 +357,7 @@ tape('SessionManager#create should return error if aud of access_token is incorr
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -317,16 +368,16 @@ tape('SessionManager#create should return error if aud of access_token is incorr
 });
 
 tape('SessionManager#create should return error if azp of access_token is incorrect', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     aud: 'http://app.bar.com',
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'bar',
     azp: 'somethingelse',
     aud: [
@@ -335,7 +386,7 @@ tape('SessionManager#create should return error if azp of access_token is incorr
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -346,16 +397,16 @@ tape('SessionManager#create should return error if azp of access_token is incorr
 });
 
 tape('SessionManager#create should return error if subject of tokens do not match', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     aud: 'http://app.bar.com',
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'bar',
     azp: 'http://app.bar.com',
     aud: [
@@ -364,7 +415,7 @@ tape('SessionManager#create should return error if subject of tokens do not matc
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -375,16 +426,16 @@ tape('SessionManager#create should return error if subject of tokens do not matc
 });
 
 tape('SessionManager#create should return error if id token was issued by a different issuer', function(t) {
-  tokens.wellKnownEndpoint('foo.auth0.local', certs.foo.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('rta.appliance.local', certs.foo.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.foo.private, 'key2', {
-    iss: 'https://foo.auth0.local/',
+    iss: 'https://rta.appliance.local/',
     aud: 'http://app.bar.com',
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'bar',
     azp: 'http://app.bar.com',
     aud: [
@@ -393,7 +444,7 @@ tape('SessionManager#create should return error if id token was issued by a diff
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -403,16 +454,16 @@ tape('SessionManager#create should return error if id token was issued by a diff
 });
 
 tape('SessionManager#create should return error if access token was issued by a different issuer', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('foo.auth0.local', certs.foo.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('rta.appliance.local', certs.foo.cert, 'key2');
 
   const idToken = tokens.sign(certs.foo.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     aud: 'http://app.bar.com',
     sub: 'foo'
   });
   const accessToken = tokens.sign(certs.foo.private, 'key2', {
-    iss: 'https://foo.auth0.local/',
+    iss: 'https://rta.appliance.local/',
     sub: 'bar',
     azp: 'http://app.bar.com',
     aud: [
@@ -421,7 +472,7 @@ tape('SessionManager#create should return error if access token was issued by a 
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .catch(function(err) {
       t.ok(err);
@@ -431,17 +482,17 @@ tape('SessionManager#create should return error if access token was issued by a 
 });
 
 tape('SessionManager#create should generate a session (api token)', function(t) {
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
-  tokens.wellKnownEndpoint('bar.auth0.local', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
+  tokens.wellKnownEndpoint('auth0.auth0.com', certs.bar.cert, 'key2');
 
   const idToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     aud: 'http://app.bar.com',
     sub: 'google|me@example.com',
     email: 'me@example.com'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
-    iss: 'https://bar.auth0.local/',
+    iss: 'https://auth0.auth0.com/',
     sub: 'google|me@example.com',
     azp: 'http://app.bar.com',
     aud: [
@@ -450,7 +501,7 @@ tape('SessionManager#create should generate a session (api token)', function(t) 
     ]
   });
 
-  const sessionManager = new tools.SessionManager('bar.auth0.local', 'http://app.bar.com');
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'bar.auth0.local', 'http://app.bar.com');
   sessionManager.create(idToken, accessToken, tokenOptions)
     .then(function(token) {
       t.ok(token);

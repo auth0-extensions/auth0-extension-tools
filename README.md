@@ -228,3 +228,38 @@ module.exports = (config, storage) => {
   return app;
 };
 ```
+
+## Session Manager for Dashboard Administrators
+
+When dashboard administrators login to an extension which has its own API the following is required:
+
+ - The user needs a token to call the Extension API (an "API Token" or a session)
+ - The Extension API needs the user's access token to call API v2
+
+The session manager will create a local session for the user (the "API Token") and embed the access token for API v2 in the session.
+
+The following snippet will generate the login URL to where the dashboard administrator needs to be redirected:
+
+```js
+const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.com', 'https://me.us.webtask.io/my-extension');
+const url = sessionManager.createAuthorizeUrl({
+  redirectUri: 'https://me.us.webtask.io/my-extension/login/callback',
+  scopes: 'read:clients read:connections',
+  expiration: 3600
+});
+```
+
+After logging in the extension will receive an id token and access token which will be used to create a local session:
+
+```js
+const options = {
+  secret: 'my-secret',
+  issuer: 'https://me.us.webtask.io/my-extension',
+  audience: 'urn:my-ext-aud'
+};
+
+sessionManager.create(idToken, accessToken, options)
+  .then(function(token) {
+    ...
+  });
+```
