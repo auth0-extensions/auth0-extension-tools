@@ -1,9 +1,9 @@
 const tape = require('tape');
 
-const errors = require('../../src/errors');
-const extensionTools = require('../../src');
-const webtaskStorageContext = require('../mocks/webtaskStorageContext');
-const BlobRecordProvider = require('../../src/records/blobRecordProvider');
+const errors = require('../src/errors');
+const extensionTools = require('../src');
+const webtaskStorageContext = require('./mocks/webtaskStorageContext');
+const BlobRecordProvider = require('../src/blobRecordProvider');
 
 tape('extension-tools should expose the BlobRecordProvider', function(t) {
   t.ok(extensionTools.BlobRecordProvider === BlobRecordProvider);

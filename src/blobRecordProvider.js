@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const uuid = require('node-uuid');
-const ArgumentError = require('../errors').ArgumentError;
-const NotFoundError = require('../errors').NotFoundError;
-const ValidationError = require('../errors').ValidationError;
+const ArgumentError = require('./errors').ArgumentError;
+const NotFoundError = require('./errors').NotFoundError;
+const ValidationError = require('./errors').ValidationError;
 
 const getDataForCollection = function(storageContext, collectionName) {
   return storageContext.read(collectionName)

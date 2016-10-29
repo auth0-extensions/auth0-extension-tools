@@ -28,7 +28,7 @@
   },
   "scripts": {
     "release": "git tag $npm_package_version && git push && git push --tags && npm publish",
-    "test": "./node_modules/tape/bin/tape tests/*.js tests/**/*.js",
+    "test": "./node_modules/tape/bin/tape tests/*.js tests/**/*.js | ./node_modules/faucet/bin/cmd.js",
     "test:docker": "./node_modules/autochecker/cli.js 4.4.5 6.3.1",
     "test:coverage": "./node_modules/nyc/bin/nyc.js ./node_modules/tape/bin/tape tests/*.js tests/**/*.js | ./node_modules/faucet/bin/cmd.js && ./node_modules/nyc/bin/nyc.js report",
     "prepublish": "npm run test:docker"

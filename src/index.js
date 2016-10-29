@@ -30,7 +30,7 @@ tools.WebtaskStorageContext = storage.WebtaskStorageContext;
 /*
  * Helpers that expose CRUD capablities to storage.
  */
-tools.BlobRecordProvider = require('./records/blobRecordProvider');
+tools.BlobRecordProvider = require('./blobRecordProvider');
 
 /*
  * Helper that providers a configuration object containing one or more settings.
@@ -41,12 +41,12 @@ tools.configProvider = require('./config/configProvider');
 /*
  * Bootstrap function to run initialize a server (connect, express, ...).
  */
-tools.createServer = require('./server').createServer;
+tools.createServer = require('./createServer').createServer;
 
 /*
  * Validate a token for webtask hooks.
  */
-tools.validateHookToken = require('./hooks/validateHookToken');
+tools.validateHookToken = require('./validateHookToken');
 
 /*
  * Session.

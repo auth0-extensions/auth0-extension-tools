@@ -1,8 +1,8 @@
 const tape = require('tape');
 
-const extensionTools = require('../../src');
-const HookTokenError = require('../../src/errors').HookTokenError;
-const validateHookToken = require('../../src/hooks/validateHookToken');
+const extensionTools = require('../src');
+const HookTokenError = require('../src/errors').HookTokenError;
+const validateHookToken = require('../src/validateHookToken');
 
 tape('extension-tools should expose validateHookToken', function(t) {
   t.ok(extensionTools.validateHookToken === validateHookToken);

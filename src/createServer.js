@@ -1,4 +1,4 @@
-const configProvider = require('../config/configProvider');
+const configProvider = require('./config/configProvider');
 
 module.exports.createServer = function(cb) {
   var server = null;

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const HookTokenError = require('../errors').HookTokenError;
+const HookTokenError = require('./errors').HookTokenError;
 
 module.exports = function validateHookToken(domain, webtaskUrl, hookPath, extensionSecret, hookToken) {
   if (!hookToken) {

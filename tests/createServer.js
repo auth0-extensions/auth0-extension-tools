@@ -1,7 +1,7 @@
 const tape = require('tape');
 
-const createServer = require('../../src/server').createServer;
-const extensionTools = require('../../src');
+const createServer = require('../src/createServer').createServer;
+const extensionTools = require('../src');
 
 tape('extension-tools should expose createServer', function(t) {
   t.ok(extensionTools.createServer === createServer);
