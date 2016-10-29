@@ -7,6 +7,7 @@
     "auth0": "^2.3.1",
     "bluebird": "^3.4.1",
     "jsonwebtoken": "^7.1.9",
+    "jwks-rsa": "^1.1.1",
     "lodash": "^4.15.0",
     "lru-memoizer": "^1.7.0",
     "ms": "^0.7.1",
@@ -27,9 +28,9 @@
   },
   "scripts": {
     "release": "git tag $npm_package_version && git push && git push --tags && npm publish",
-    "test": "./node_modules/tape/bin/tape tests/**/*.js | ./node_modules/faucet/bin/cmd.js",
+    "test": "./node_modules/tape/bin/tape tests/*.js tests/**/*.js",
     "test:docker": "./node_modules/autochecker/cli.js 4.4.5 6.3.1",
-    "test:coverage": "./node_modules/nyc/bin/nyc.js ./node_modules/tape/bin/tape tests/**/*.js | ./node_modules/faucet/bin/cmd.js && ./node_modules/nyc/bin/nyc.js report",
+    "test:coverage": "./node_modules/nyc/bin/nyc.js ./node_modules/tape/bin/tape tests/*.js tests/**/*.js | ./node_modules/faucet/bin/cmd.js && ./node_modules/nyc/bin/nyc.js report",
     "prepublish": "npm run test:docker"
   },
   "repository": {
@@ -45,6 +46,14 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/auth0-extensions/auth0-extension-tools/issues"
+  },
+  "nyc": {
+    "exclude": [
+     "node_modules",
+     "bin",
+     "coverage",
+     "tests/**"
+   ]
   },
   "homepage": "https://github.com/auth0-extensions/auth0-extension-tools#readme"
 }

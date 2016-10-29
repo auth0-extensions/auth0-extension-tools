@@ -49,6 +49,11 @@ tools.createServer = require('./server').createServer;
 tools.validateHookToken = require('./hooks/validateHookToken');
 
 /*
+ * Session.
+ */
+tools.SessionManager = require('./sessionManager');
+
+/*
  * Bootstrap function to run initialize an Express server.
  */
 tools.createExpressServer = function createExpressServer(cb) {
