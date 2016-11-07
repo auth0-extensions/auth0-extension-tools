@@ -202,7 +202,7 @@ Here's what you need to use as an entrypoint for your Webtask:
 const tools = require('auth0-extension-tools');
 const expressApp = require('./server');
 
-module.exports = tools.createExpressServer(function(req, config, storage) {
+module.exports = tools.createExpressServer(function(config, storage) {
   return expressApp(config, storage);
 });
 ```
