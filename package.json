@@ -1,6 +1,6 @@
 {
   "name": "auth0-extension-tools",
-  "version": "0.16.0",
+  "version": "1.0.0",
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
@@ -31,7 +31,7 @@
     "test": "./node_modules/tape/bin/tape tests/*.js tests/**/*.js | ./node_modules/faucet/bin/cmd.js",
     "test:docker": "./node_modules/autochecker/cli.js 4.4.5 6.3.1",
     "test:coverage": "./node_modules/nyc/bin/nyc.js ./node_modules/tape/bin/tape tests/*.js tests/**/*.js | ./node_modules/faucet/bin/cmd.js && ./node_modules/nyc/bin/nyc.js report",
-    "prepublish": "npm run test:docker"
+    "foo": "npm run test:docker"
   },
   "repository": {
     "type": "git",
