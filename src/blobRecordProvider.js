@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const uuid = require('node-uuid');
+const uuid = require('uuid');
 const ArgumentError = require('./errors').ArgumentError;
 const NotFoundError = require('./errors').NotFoundError;
 const ValidationError = require('./errors').ValidationError;
