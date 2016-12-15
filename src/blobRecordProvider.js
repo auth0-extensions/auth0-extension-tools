@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const uuid = require('node-uuid');
+const promiseRetry = require('promise-retry');
 const ArgumentError = require('./errors').ArgumentError;
 const NotFoundError = require('./errors').NotFoundError;
 const ValidationError = require('./errors').ValidationError;
@@ -10,6 +11,32 @@ const getDataForCollection = function(storageContext, collectionName) {
       data[collectionName] = data[collectionName] || [];
       return data;
     });
+};
+
+const retryAction = function(storageContext, action) {
+  const retryOptions = {
+    retries: 10,
+    factor: 2,
+    minTimeout: 100,
+    maxTimeout: Infinity,
+    randomize: false
+  };
+
+  return promiseRetry(function(retry, number) {
+    console.log('Retry attempt', number);
+
+    return action()
+      .catch(function(err) {
+        const writeRetryCondition =
+          storageContext.writeRetryCondition ||
+          function() { return false; };
+        if (writeRetryCondition(err)) {
+          return retry(err);
+        }
+
+        throw err;
+      });
+  }, retryOptions);
 };
 
 /**
@@ -65,28 +92,32 @@ BlobRecordProvider.prototype.get = function(collectionName, identifier) {
  */
 BlobRecordProvider.prototype.create = function(collectionName, record) {
   const storageContext = this.storageContext;
-  return getDataForCollection(storageContext, collectionName)
-    .then(function(data) {
-      if (!record._id) {
-        record._id = uuid.v4();
-      }
+  const action = function() {
+    return getDataForCollection(storageContext, collectionName)
+      .then(function(data) {
+        if (!record._id) {
+          record._id = uuid.v4();
+        }
 
-      const index = _.findIndex(data[collectionName], function(r) { return r._id === record._id; });
-      if (index > -1) {
-        return Promise.reject(
-          new ValidationError('The record ' + record._id + ' in ' + collectionName + ' already exists.')
-        );
-      }
+        const index = _.findIndex(data[collectionName], function(r) { return r._id === record._id; });
+        if (index > -1) {
+          return Promise.reject(
+            new ValidationError('The record ' + record._id + ' in ' + collectionName + ' already exists.')
+          );
+        }
 
-      // Add to dataset.
-      data[collectionName].push(record);
+        // Add to dataset.
+        data[collectionName].push(record);
 
-      // Save.
-      return storageContext.write(data)
-        .then(function() {
-          return record;
-        });
-    });
+        // Save.
+        return storageContext.write(data)
+          .then(function() {
+            return record;
+          });
+      });
+  };
+
+  return retryAction(storageContext, action);
 };
 
 /**
@@ -99,27 +130,31 @@ BlobRecordProvider.prototype.create = function(collectionName, record) {
  */
 BlobRecordProvider.prototype.update = function(collectionName, identifier, record, upsert) {
   const storageContext = this.storageContext;
-  return getDataForCollection(storageContext, collectionName)
-    .then(function(data) {
-      const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
-      if (index < 0 && !upsert) {
-        throw new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.');
-      }
+  const action = function() {
+    return getDataForCollection(storageContext, collectionName)
+      .then(function(data) {
+        const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
+        if (index < 0 && !upsert) {
+          throw new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.');
+        }
 
-      // Update record.
-      const updatedRecord = _.extend({ _id: identifier }, index < 0 ? { } : data[collectionName][index], record);
-      if (index < 0) {
-        data[collectionName].push(updatedRecord);
-      } else {
-        data[collectionName][index] = updatedRecord;
-      }
+        // Update record.
+        const updatedRecord = _.extend({ _id: identifier }, index < 0 ? { } : data[collectionName][index], record);
+        if (index < 0) {
+          data[collectionName].push(updatedRecord);
+        } else {
+          data[collectionName][index] = updatedRecord;
+        }
 
-      // Save.
-      return storageContext.write(data)
-        .then(function() {
-          return updatedRecord;
-        });
-    });
+        // Save.
+        return storageContext.write(data)
+          .then(function() {
+            return updatedRecord;
+          });
+      });
+  };
+
+  return retryAction(storageContext, action);
 };
 
 /**
@@ -129,22 +164,26 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
  */
 BlobRecordProvider.prototype.delete = function(collectionName, identifier) {
   const storageContext = this.storageContext;
-  return getDataForCollection(storageContext, collectionName)
-    .then(function(data) {
-      const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
-      if (index < 0) {
-        return false;
-      }
+  const action = function() {
+    return getDataForCollection(storageContext, collectionName)
+      .then(function(data) {
+        const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
+        if (index < 0) {
+          return false;
+        }
 
-      // Remove the record.
-      data[collectionName].splice(index, 1);
+        // Remove the record.
+        data[collectionName].splice(index, 1);
 
-      // Save.
-      return storageContext.write(data)
-        .then(function() {
-          return true;
-        });
-    });
+        // Save.
+        return storageContext.write(data)
+          .then(function() {
+            return true;
+          });
+      });
+  };
+
+  return retryAction(storageContext, action);
 };
 
 /**

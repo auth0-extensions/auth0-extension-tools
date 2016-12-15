@@ -1,7 +1,7 @@
 const webtaskStorage = require('../mocks/webtaskStorage');
 const WebtaskStorageContext = require('../../src/storage/webtaskStorageContext');
 
-module.exports = function(onDataChanged) {
+module.exports = function(onDataChanged, beforeDataChanged) {
   const data = {
     applications: [
       { _id: 'a1', name: 'a1' }
@@ -12,6 +12,6 @@ module.exports = function(onDataChanged) {
     ]
   };
 
-  const storage = webtaskStorage(data, onDataChanged);
+  const storage = webtaskStorage(data, onDataChanged, beforeDataChanged);
   return new WebtaskStorageContext(storage);
 };

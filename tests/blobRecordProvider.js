@@ -135,6 +135,33 @@ tape('BlobRecordProvider#create should not allow duplicate identifiers', functio
     });
 });
 
+tape('BlobRecordProvider#create should perform write retries if storage context supports it', function(t) {
+  var data = null;
+  var attempts = 0;
+  const context = webtaskStorageContext(
+    function(updatedData) {
+      data = updatedData;
+    },
+    function() {
+      attempts++;
+
+      if (attempts < 3) {
+        const error = new Error('Write conflict!');
+        error.code = 409;
+        return error;
+      }
+    }
+  );
+
+  const provider = new BlobRecordProvider(context);
+  provider.create('users', { _id: 5, name: 'User 5' })
+    .then(function(user) {
+      t.ok(user);
+      t.equal(attempts, 3, '');
+      t.end();
+    });
+});
+
 tape('BlobRecordProvider#update should update records correctly', function(t) {
   var data = null;
   const context = webtaskStorageContext(function(updatedData) {
@@ -190,7 +217,34 @@ tape('BlobRecordProvider#update should throw error if record does not exist', fu
     });
 });
 
-tape('BlobRecordProvider#delete should return false if record does not exist', function(t) {
+tape('BlobRecordProvider#update should perform write retries if storage context supports it', function(t) {
+  var data = null;
+  var attempts = 0;
+  const context = webtaskStorageContext(
+    function(updatedData) {
+      data = updatedData;
+    },
+    function() {
+      attempts++;
+
+      if (attempts < 3) {
+        const error = new Error('Write conflict!');
+        error.code = 409;
+        return error;
+      }
+    }
+  );
+
+  const provider = new BlobRecordProvider(context);
+  provider.update('users', 23, { name: 'User 6', foo: 'bar' })
+    .then(function(user) {
+      t.ok(user);
+      t.equal(attempts, 3, '');
+      t.end();
+    });
+});
+
+tape('BlobRecordProvider#delete should return true if the record exists', function(t) {
   var data = null;
   const context = webtaskStorageContext(function(updatedData) {
     data = updatedData;
@@ -214,6 +268,35 @@ tape('BlobRecordProvider#delete should return false if record does not exist', f
   provider.delete('users', 24)
     .then(function(deleted) {
       t.notOk(deleted);
+      t.end();
+    });
+});
+
+tape('BlobRecordProvider#delete should perform write retries if storage context supports it', function(t) {
+  var data = null;
+  var attempts = 0;
+  const context = webtaskStorageContext(
+    function(updatedData) {
+      data = updatedData;
+    },
+    function() {
+      attempts++;
+
+      if (attempts < 3) {
+        const error = new Error('Write conflict!');
+        error.code = 409;
+        return error;
+      }
+    }
+  );
+
+  const provider = new BlobRecordProvider(context);
+  provider.delete('users', 23)
+    .then(function(deleted) {
+      t.ok(deleted);
+      t.equal(data.users.length, 1);
+      t.equal(data.users[0]._id, 1);
+      t.equal(data.users[0].name, 'John');
       t.end();
     });
 });
