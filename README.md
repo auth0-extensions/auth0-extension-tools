@@ -18,7 +18,7 @@ tools.managementApi.getAccessToken('me.auth0.com', 'myclient', 'mysecret2')
     // Call the Management API with this token.
   });
 
-// This will cache the token for 1h.
+// This will cache the token for as long as the access token is valid.
 tools.managementApi.getAccessTokenCached('me.auth0.com', 'myclient', 'mysecret2')
   .then(function(token) {
     // Call the Management API with this token.
