@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const uuid = require('node-uuid');
+const promiseRetry = require('promise-retry');
 
 const seriesQueue = require('./seriesQueue');
 const ArgumentError = require('./errors').ArgumentError;
@@ -12,6 +13,32 @@ const getDataForCollection = function(storageContext, collectionName) {
       data[collectionName] = data[collectionName] || [];
       return data;
     });
+};
+
+const withRetry = function(storageContext, action) {
+  const retryOptions = {
+    retries: 10,
+    factor: 2,
+    minTimeout: 100,
+    maxTimeout: Infinity,
+    randomize: false
+  };
+
+  return function() {
+    return promiseRetry(function(retry) {
+      return action()
+        .catch(function(err) {
+          const writeRetryCondition =
+            storageContext.writeRetryCondition ||
+            function() { return false; };
+          if (writeRetryCondition(err)) {
+            return retry(err);
+          }
+
+          throw err;
+        });
+    }, retryOptions);
+  };
 };
 
 /**
@@ -35,14 +62,18 @@ function BlobRecordProvider(storageContext, options) {
  * Write to the underlying storage layer
  * @param {string} action Action to execute.
  */
-BlobRecordProvider.prototype.write = function(action) {
+BlobRecordProvider.prototype.write = function(storageContext, action) {
+  const actionWithRetry = withRetry(storageContext, action);
+
+  // Concurrent writes are allowed.
   if (this.options.concurrentWrites) {
-    return action();
+    return actionWithRetry();
   }
 
+  // Concurrent writes are not allowed, process them sequantially.
   const queue = this.queue;
   return new Promise(function(resolve, reject) {
-    queue(action, function(err, res) {
+    queue(actionWithRetry, function(err, res) {
       if (err) {
         return reject(err);
       }
@@ -92,7 +123,7 @@ BlobRecordProvider.prototype.get = function(collectionName, identifier) {
  */
 BlobRecordProvider.prototype.create = function(collectionName, record) {
   const storageContext = this.storageContext;
-  return this.write(function() {
+  return this.write(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         if (!record._id) {
@@ -128,7 +159,7 @@ BlobRecordProvider.prototype.create = function(collectionName, record) {
  */
 BlobRecordProvider.prototype.update = function(collectionName, identifier, record, upsert) {
   const storageContext = this.storageContext;
-  return this.write(function() {
+  return this.write(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
@@ -160,7 +191,7 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
  */
 BlobRecordProvider.prototype.delete = function(collectionName, identifier) {
   const storageContext = this.storageContext;
-  return this.write(function() {
+  return this.write(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });

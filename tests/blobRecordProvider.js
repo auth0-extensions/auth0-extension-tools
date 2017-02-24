@@ -192,7 +192,7 @@ tape('BlobRecordProvider#create should surface storage errors', function(t) {
     });
 });
 
-tape.skip('BlobRecordProvider#create should perform write retries if storage context supports it', function(t) {
+tape('BlobRecordProvider#create should perform write retries if storage context supports it', function(t) {
   var data = null;
   var attempts = 0;
   const context = webtaskStorageContext(
@@ -312,7 +312,7 @@ tape('BlobRecordProvider#update should throw error if record does not exist', fu
     });
 });
 
-tape.skip('BlobRecordProvider#update should perform write retries if storage context supports it', function(t) {
+tape('BlobRecordProvider#update should perform write retries if storage context supports it', function(t) {
   var data = null;
   var attempts = 0;
   const context = webtaskStorageContext(
@@ -367,7 +367,7 @@ tape('BlobRecordProvider#delete should return false if record does not exist', f
     });
 });
 
-tape.skip('BlobRecordProvider#delete should perform write retries if storage context supports it', function(t) {
+tape('BlobRecordProvider#delete should perform write retries if storage context supports it', function(t) {
   var data = null;
   var attempts = 0;
   const context = webtaskStorageContext(
