@@ -57,6 +57,14 @@ WebtaskStorageContext.prototype.write = function(data) {
 };
 
 /**
+ * Perform retries on write if a webtask storage conflict is detected.
+ * @param {object} err The write error to examine.
+ */
+WebtaskStorageContext.prototype.writeRetryCondition = function(err) {
+  return err.code === 409;
+};
+
+/**
  * Module exports.
  * @type {function}
  */
