@@ -1,5 +1,5 @@
 {
-  "extends": "airbnb/base",
+  "extends": "auth0-base",
   "ecmaFeatures": {
     "modules": true
   },
@@ -21,6 +21,7 @@
     "prefer-template": 0,
     "func-names": 0,
     "new-cap": 0,
+    "no-var": 0,
     "no-multiple-empty-lines": 2,
     "no-unused-vars": 2,
     "object-curly-spacing": [2, "always"],

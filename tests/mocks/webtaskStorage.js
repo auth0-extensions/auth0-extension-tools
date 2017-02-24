@@ -27,12 +27,12 @@ module.exports = function(data, onDataChanged, beforeDataChanged) {
         }
       }
 
-      webtaskData = _.extend({ }, webtaskData, newData);
+      webtaskData = newData;
       if (onDataChanged) {
         onDataChanged(webtaskData);
       }
 
-      return cb();
+      return setTimeout(cb, 5);
     }
   };
 };
