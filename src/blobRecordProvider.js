@@ -13,7 +13,7 @@ const getDataForCollection = function(storageContext, collectionName) {
     });
 };
 
-const retryAction = function(storageContext, action) {
+const withRetry = function(storageContext, action) {
   const retryOptions = {
     retries: 10,
     factor: 2,
@@ -23,7 +23,7 @@ const retryAction = function(storageContext, action) {
   };
 
   return promiseRetry(function(retry, number) {
-    console.log('Retry attempt', number);
+    console.warn('BlobRecordProvider - Retry attempt:', number);
 
     return action()
       .catch(function(err) {
@@ -73,7 +73,7 @@ BlobRecordProvider.prototype.getAll = function(collectionName) {
 BlobRecordProvider.prototype.get = function(collectionName, identifier) {
   return this.getAll(collectionName)
     .then(function(records) {
-      const record = _.find(records, function(r) { return r._id === identifier });
+      const record = _.find(records, function(r) { return r._id === identifier; });
       if (!record) {
         return Promise.reject(
           new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.')
@@ -92,7 +92,7 @@ BlobRecordProvider.prototype.get = function(collectionName, identifier) {
  */
 BlobRecordProvider.prototype.create = function(collectionName, record) {
   const storageContext = this.storageContext;
-  const action = function() {
+  return withRetry(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         if (!record._id) {
@@ -115,9 +115,7 @@ BlobRecordProvider.prototype.create = function(collectionName, record) {
             return record;
           });
       });
-  };
-
-  return retryAction(storageContext, action);
+  });
 };
 
 /**
@@ -130,7 +128,7 @@ BlobRecordProvider.prototype.create = function(collectionName, record) {
  */
 BlobRecordProvider.prototype.update = function(collectionName, identifier, record, upsert) {
   const storageContext = this.storageContext;
-  const action = function() {
+  return withRetry(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
@@ -152,9 +150,7 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
             return updatedRecord;
           });
       });
-  };
-
-  return retryAction(storageContext, action);
+  });
 };
 
 /**
@@ -164,7 +160,7 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
  */
 BlobRecordProvider.prototype.delete = function(collectionName, identifier) {
   const storageContext = this.storageContext;
-  const action = function() {
+  return withRetry(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
@@ -181,9 +177,7 @@ BlobRecordProvider.prototype.delete = function(collectionName, identifier) {
             return true;
           });
       });
-  };
-
-  return retryAction(storageContext, action);
+  });
 };
 
 /**

@@ -77,9 +77,7 @@ tape('WebtaskStorageContext#write should write files correctly', function(t) {
     });
 });
 
-// FIXME: This test wasn't working. The caught error was not coming from the problematic object, but from the missing onDataChanged function
-//        which the mock webtaskStorage module now handles without throwing an error.
-tape.skip('WebtaskStorageContext#write should handle errors correctly when writing problematic objects', function(t) {
+tape('WebtaskStorageContext#write should handle errors correctly when writing problematic objects', function(t) {
   const storage = webtaskStorage({ });
 
   const a = { foo: 'bar' };

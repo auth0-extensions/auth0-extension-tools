@@ -14,8 +14,14 @@ module.exports = function(data, onDataChanged, beforeDataChanged) {
         return cb(data);
       }
 
+      try {
+        JSON.stringify(newData, null, 2);
+      } catch (e) {
+        return cb(e);
+      }
+
       if (beforeDataChanged) {
-        var error = beforeDataChanged();
+        const error = beforeDataChanged();
         if (error) {
           return cb(error);
         }

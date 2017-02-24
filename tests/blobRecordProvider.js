@@ -123,7 +123,7 @@ tape('BlobRecordProvider#create should generate its own id if not provided', fun
 });
 
 tape('BlobRecordProvider#create should not allow duplicate identifiers', function(t) {
-  var data = null;
+  const data = null;
   const context = webtaskStorageContext();
 
   const provider = new BlobRecordProvider(context);
@@ -131,6 +131,26 @@ tape('BlobRecordProvider#create should not allow duplicate identifiers', functio
     .catch(function(err) {
       t.ok(err);
       t.ok(err instanceof errors.ValidationError);
+      t.end();
+    });
+});
+
+tape('BlobRecordProvider#create should surface storage errors', function(t) {
+  var data = null;
+  const context = webtaskStorageContext(
+    function(updatedData) {
+      data = updatedData;
+    },
+    function() {
+      return new Error('write_error');
+    }
+  );
+
+  const provider = new BlobRecordProvider(context);
+  provider.create('users', { _id: 50, name: 'User 5' })
+    .catch(function(err) {
+      t.ok(err);
+      t.equal(err.message, 'write_error');
       t.end();
     });
 });
@@ -204,8 +224,28 @@ tape('BlobRecordProvider#update should upsert records correctly', function(t) {
     });
 });
 
-tape('BlobRecordProvider#update should throw error if record does not exist', function(t) {
+tape('BlobRecordProvider#update should surface storage errors', function(t) {
   var data = null;
+  const context = webtaskStorageContext(
+    function(updatedData) {
+      data = updatedData;
+    },
+    function() {
+      return new Error('write_error');
+    }
+  );
+
+  const provider = new BlobRecordProvider(context);
+  provider.update('users', 24, { name: 'User 6', foo: 'bar' }, true)
+    .catch(function(err) {
+      t.ok(err);
+      t.equal(err.message, 'write_error');
+      t.end();
+    });
+});
+
+tape('BlobRecordProvider#update should throw error if record does not exist', function(t) {
+  const data = null;
   const context = webtaskStorageContext();
 
   const provider = new BlobRecordProvider(context);
@@ -297,6 +337,26 @@ tape('BlobRecordProvider#delete should perform write retries if storage context 
       t.equal(data.users.length, 1);
       t.equal(data.users[0]._id, 1);
       t.equal(data.users[0].name, 'John');
+      t.end();
+    });
+});
+
+tape('BlobRecordProvider#delete should surface storage errors', function(t) {
+  var data = null;
+  const context = webtaskStorageContext(
+    function(updatedData) {
+      data = updatedData;
+    },
+    function() {
+      return new Error('write_error');
+    }
+  );
+
+  const provider = new BlobRecordProvider(context);
+  provider.delete('users', 23)
+    .catch(function(err) {
+      t.ok(err);
+      t.equal(err.message, 'write_error');
       t.end();
     });
 });
