@@ -33,6 +33,32 @@ tape('configFactory should wrap provider', function(t) {
   t.end();
 });
 
+tape('configFactory#setValue should allow getting custom values', function(t) {
+  const provider = configProvider.fromWebtaskContext({
+    params: {
+      a: 'value1',
+      b: 'value2',
+      Setting: 456
+    },
+    secrets: {
+      user: 'usr',
+      password: 'pwd',
+      Setting: 789
+    }
+  });
+
+  const config = configFactory();
+  config.setProvider(provider);
+  config.setValue('foo', 'bar');
+
+  t.ok(config);
+  t.equal(config('foo'), 'bar');
+  t.equal(config('a'), 'value1');
+  t.equal(config('user'), 'usr');
+  t.equal(config('Setting'), 789);
+  t.end();
+});
+
 tape('configFactory should throw error if provider not set', function(t) {
   try {
     const config = configFactory();

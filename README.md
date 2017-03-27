@@ -194,6 +194,14 @@ db.delete('documents', 1939393)
   });
 ```
 
+The use of local files, Webtask storage and S3 will cause concurrency problems because write operations in the `BlobRecordProvider` require a full read of the file, an update in the JSON object and then a full write. If multiple operations happen in parallel data might get lost because of this approach.
+
+By setting `concurrentWrites` to `false` all writes will happen sequentially instead of in parallel to guarantee data consistency. This will reduce throughput to 1 concurrency write.
+
+```js
+const db = new tools.BlobRecordProvider(someStorageContext, { concurrentWrites: false });
+```
+
 ### Start an Express Server.
 
 Here's what you need to use as an entrypoint for your Webtask:
