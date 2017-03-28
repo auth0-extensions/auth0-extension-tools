@@ -154,13 +154,16 @@ A record provider exposes CRUD capabilities which makes it easy to interact with
 This library exposes a Blob record provider, which does not support concurrency. For each operation it will read a file, apply the change (eg: delete a record) and then write the full file again.
 
 ```js
-const db = new tools.BlobRecordProvider(someStorageContext);
-db.getRecords('documents')
+const db = new tools.BlobRecordProvider(someStorageContext, {
+  concurrentWrites: false // Set this to true to support parallel writes. You might loose some data in this case.
+});
+
+db.getAll('documents')
   .then(function (documents) {
     console.log('All documents:', documents);
   });
 
-db.getRecord('documents', '12345')
+db.get('documents', '12345')
   .then(function (doc) {
     console.log('Document:', doc);
   });
