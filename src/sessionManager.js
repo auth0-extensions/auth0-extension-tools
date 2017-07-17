@@ -59,6 +59,10 @@ SessionManager.prototype.createAuthorizeUrl = function(options) {
     return Promise.reject(new ArgumentError('Must provide the redirectUri'));
   }
 
+  if (options.nonce === null || options.nonce === undefined) {
+    return Promise.reject(new ArgumentError('Must provide the nonce'));
+  }
+
   if (typeof options.redirectUri !== 'string' || options.redirectUri.length === 0) {
     return Promise.reject(new ArgumentError('The provided redirectUri is invalid: ' + options.redirectUri));
   }
@@ -69,14 +73,15 @@ SessionManager.prototype.createAuthorizeUrl = function(options) {
   }
 
   return [
-    'https://' + this.options.rta + '/i/oauth2/authorize',
+    'https://' + this.options.rta + '/authorize',
     '?client_id=' + encodeURIComponent(this.options.clientId),
-    '&response_type=token',
+    '&response_type=token id_token',
     '&response_mode=form_post',
     '&scope=' + encodeURIComponent(scopes),
     '&expiration=' + (options.expiration || 36000),
     '&redirect_uri=' + encodeURIComponent(options.redirectUri),
-    '&audience=' + encodeURIComponent(this.managementApiAudience)
+    '&audience=' + encodeURIComponent(this.managementApiAudience),
+    '&nonce=' + encodeURIComponent(options.nonce)
   ].join('');
 };
 
