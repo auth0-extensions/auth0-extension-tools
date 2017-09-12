@@ -14,9 +14,9 @@ function SessionManager(rta, domain, clientId) {
   if (typeof rta !== 'string' || rta.length === 0) {
     throw new ArgumentError('The provided rta is invalid: ' + rta);
   }
-  
+
   if (rta.indexOf('https://') === 0) {
-    rta = rta.replace('https://', ''); 
+    rta = rta.replace('https://', '');
   }
 
   if (domain === null || domain === undefined) {
