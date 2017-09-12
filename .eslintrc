@@ -1,10 +1,19 @@
 {
-  "extends": "auth0-base",
+  "extends": [
+    "auth0-base",
+    "plugin:import/errors",
+    "plugin:import/warnings"
+  ],
   "ecmaFeatures": {
     "modules": true
   },
+  "parserOptions": {
+    "ecmaVersion": 4,
+    "sourceType": "module"
+  },
   "env": {
-    "node": true
+    "node": true,
+    "mocha": true
   },
   "rules": {
     "max-len": 0,
@@ -21,9 +30,10 @@
     "prefer-template": 0,
     "func-names": 0,
     "new-cap": 0,
-    "no-var": 0,
+    "no-param-reassign": 0,
     "no-multiple-empty-lines": 2,
     "no-unused-vars": 2,
+    "no-var": 0,
     "object-curly-spacing": [2, "always"],
     "quotes": [2, "single", "avoid-escape"],
     "semi": [2, "always"],
