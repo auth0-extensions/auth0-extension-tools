@@ -13,15 +13,14 @@ const tokenOptions = {
 tape('SessionManager#createAuthorizeUrl should return the authorize url', function(t) {
   const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   const url = sessionManager.createAuthorizeUrl({
+    nonce: 'nonce',
     redirectUri: 'http://foo.bar.com/login/callback'
   });
 
-  const expectedUrl = 'https://auth0.auth0.com/i/oauth2/authorize?client_id=' +
-    'http%3A%2F%2Ffoo.bar.com' +
-    '&response_type=token&response_mode=form_post&scope=openid%20name%20email' +
-    '&expiration=36000&redirect_uri=' +
-    'http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback&' +
-    'audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F';
+  const expectedUrl = 'https://auth0.auth0.com/authorize?client_id=http%3A%2F%2Ffoo.bar.com&' +
+    'response_type=token id_token&response_mode=form_post&scope=' +
+    'openid%20name%20email&expiration=36000&redirect_uri=http%3A%2F%2Ffoo.bar.com' +
+    '%2Flogin%2Fcallback&audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F&nonce=nonce';
   t.ok(url === expectedUrl);
   t.end();
 });
@@ -30,15 +29,16 @@ tape('SessionManager#createAuthorizeUrl should set custom scopes', function(t) {
   const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   const url = sessionManager.createAuthorizeUrl({
     redirectUri: 'http://foo.bar.com/login/callback',
-    scopes: 'read:clients read:connections'
+    scopes: 'read:clients read:connections',
+    nonce: 'nonce'
   });
 
-  const expectedUrl = 'https://auth0.auth0.com/i/oauth2/authorize?client_id=' +
-    'http%3A%2F%2Ffoo.bar.com' +
-    '&response_type=token&response_mode=form_post&scope=openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
-    '&expiration=36000&redirect_uri=' +
-    'http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback&' +
-    'audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F';
+  const expectedUrl = 'https://auth0.auth0.com/authorize?client_id=' +
+    'http%3A%2F%2Ffoo.bar.com&response_type=token id_token' +
+    '&response_mode=form_post&scope=' +
+    'openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
+    '&expiration=36000&redirect_uri=http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback' +
+    '&audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F&nonce=nonce';
   t.ok(url === expectedUrl);
   t.end();
 });
@@ -48,15 +48,16 @@ tape('SessionManager#createAuthorizeUrl should set custom expiration', function(
   const url = sessionManager.createAuthorizeUrl({
     redirectUri: 'http://foo.bar.com/login/callback',
     scopes: 'read:clients read:connections',
+    nonce: 'nonce',
     expiration: 1
   });
 
-  const expectedUrl = 'https://auth0.auth0.com/i/oauth2/authorize?client_id=' +
-    'http%3A%2F%2Ffoo.bar.com' +
-    '&response_type=token&response_mode=form_post&scope=openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
-    '&expiration=1&redirect_uri=' +
-    'http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback&' +
-    'audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F';
+  const expectedUrl = 'https://auth0.auth0.com/authorize?client_id=' +
+    'http%3A%2F%2Ffoo.bar.com&response_type=token id_token' +
+    '&response_mode=form_post&scope=' +
+    'openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
+    '&expiration=1&redirect_uri=http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback' +
+    '&audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F&nonce=nonce';
   t.ok(url === expectedUrl);
   t.end();
 });
