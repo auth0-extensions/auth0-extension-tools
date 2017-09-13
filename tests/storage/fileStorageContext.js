@@ -55,6 +55,7 @@ tape('FileStorageContext#read should fallback to empty object if data is empty',
 
 tape('FileStorageContext#read should handle errors correctly when read permissions are denied', function(t) {
   const filePath = path.join(__dirname, './data.json');
+
   mock({
     [filePath]: mock.file({
       content: 'file content here',
@@ -63,8 +64,10 @@ tape('FileStorageContext#read should handle errors correctly when read permissio
   });
 
   const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
+
   ctx.read()
     .catch(function(err) {
+      mock.restore();
       t.ok(err);
       t.end();
     });
@@ -79,11 +82,11 @@ tape('FileStorageContext#read should read files correctly', function(t) {
   const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
   ctx.read()
     .then(function(data) {
+      mock.restore();
       t.ok(data);
       t.ok(data.application);
       t.equal(data.application, 'my-app');
       t.end();
-      mock.restore();
     });
 });
 
@@ -96,11 +99,11 @@ tape('FileStorageContext#read should return defaultData if file is empty', funct
   const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
   ctx.read()
     .then(function(data) {
+      mock.restore();
       t.ok(data);
       t.ok(data.foo);
       t.equal(data.foo, 'bar');
       t.end();
-      mock.restore();
     });
 });
 
@@ -114,11 +117,11 @@ tape('FileStorageContext#read should write files correctly', function(t) {
   ctx.write({ application: 'my-new-app' })
     .then(function() {
       const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      mock.restore();
       t.ok(file);
       t.ok(file.application);
       t.equal(file.application, 'my-new-app');
       t.end();
-      mock.restore();
     });
 });
 
@@ -131,9 +134,9 @@ tape('FileStorageContext#read should handle invalid json when reading the file',
   const ctx = new FileStorageContext(filePath);
   ctx.read()
     .catch(function(e) {
+      mock.restore();
       t.ok(e);
       t.end();
-      mock.restore();
     });
 });
 
@@ -147,13 +150,13 @@ tape('FileStorageContext#write should merge objects if mergeWrites is true', fun
   ctx.write({ version: '123' })
     .then(function() {
       const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      mock.restore();
       t.ok(file);
       t.ok(file.application);
       t.equal(file.application, 'my-app');
       t.ok(file.version);
       t.equal(file.version, '123');
       t.end();
-      mock.restore();
     });
 });
 
@@ -167,6 +170,7 @@ tape('FileStorageContext#write should merge objects if mergeWrites is true and r
   ctx.write({ version: '123', application: 'my-new-app' })
     .then(function() {
       const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      mock.restore();
       t.ok(file);
       t.ok(file.foo);
       t.equal(file.foo, 'bar');
@@ -175,7 +179,6 @@ tape('FileStorageContext#write should merge objects if mergeWrites is true and r
       t.ok(file.version);
       t.equal(file.version, '123');
       t.end();
-      mock.restore();
     });
 });
 
@@ -189,12 +192,12 @@ tape('FileStorageContext#write should merge objects if mergeWrites is false', fu
   ctx.write({ version: '123' })
     .then(function() {
       const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      mock.restore();
       t.ok(file);
       t.notOk(file.application);
       t.ok(file.version);
       t.equal(file.version, '123');
       t.end();
-      mock.restore();
     });
 });
 
@@ -216,11 +219,11 @@ tape('FileStorageContext#write should handle errors correctly when writing probl
   const ctx = new FileStorageContext(filePath, { mergeWrites: true });
   ctx.write({ a: a, b: b })
     .catch(function(err) {
+      mock.restore();
       t.ok(err);
       t.ok(err.name);
       t.equal(err.name, 'TypeError');
       t.end();
-      mock.restore();
     });
 });
 
@@ -244,8 +247,8 @@ tape('FileStorageContext#write should handle errors correctly when write permiss
       t.fail('Should not write the file.');
     })
     .catch(function(err) {
+      mock.restore();
       t.ok(err, 'should throw error');
       t.end();
-      mock.restore();
     });
 });
