@@ -1,11 +1,11 @@
 {
   "name": "auth0-extension-tools",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
     "async": "2.1.2",
-    "auth0": "^2.3.1",
+    "auth0": "^2.9.0",
     "bluebird": "^3.4.1",
     "jsonwebtoken": "^7.1.9",
     "jwks-rsa": "^1.1.1",
