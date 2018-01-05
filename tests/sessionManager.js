@@ -43,6 +43,58 @@ tape('SessionManager#createAuthorizeUrl should set custom scopes', function(t) {
   t.end();
 });
 
+tape('SessionManager#createAuthorizeUrl should set custom state', function(t) {
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
+  const url = sessionManager.createAuthorizeUrl({
+    redirectUri: 'http://foo.bar.com/login/callback',
+    scopes: 'read:clients read:connections',
+    nonce: 'nonce',
+    state: 'state'
+  });
+
+  const expectedUrl = 'https://auth0.auth0.com/authorize?client_id=' +
+    'http%3A%2F%2Ffoo.bar.com&response_type=token id_token' +
+    '&response_mode=form_post&scope=' +
+    'openid%20name%20email%20read%3Aclients%20read%3Aconnections' +
+    '&expiration=36000&redirect_uri=http%3A%2F%2Ffoo.bar.com%2Flogin%2Fcallback' +
+    '&audience=https%3A%2F%2Fme.auth0.local%2Fapi%2Fv2%2F&nonce=nonce&state=state';
+  t.ok(url === expectedUrl);
+  t.end();
+});
+
+tape('SessionManager#createAuthorizeUrl should reject bad state', function(t) {
+  const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
+
+  try {
+    const url = sessionManager.createAuthorizeUrl({
+      redirectUri: 'http://foo.bar.com/login/callback',
+      scopes: 'read:clients read:connections',
+      nonce: 'nonce',
+      state: ''
+    });
+    t.notOk(true);
+  } catch(err) {
+    t.ok(err);
+    t.ok(err instanceof tools.ArgumentError);
+  }
+
+  try {
+    const url = sessionManager.createAuthorizeUrl({
+      redirectUri: 'http://foo.bar.com/login/callback',
+      scopes: 'read:clients read:connections',
+      nonce: 'nonce',
+      state: null
+    });
+    t.notOk(true);
+  } catch(err) {
+    t.ok(err);
+    t.ok(err instanceof tools.ArgumentError);
+  }
+
+  t.end();
+});
+
+
 tape('SessionManager#createAuthorizeUrl should set custom expiration', function(t) {
   const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.local', 'http://foo.bar.com');
   const url = sessionManager.createAuthorizeUrl({

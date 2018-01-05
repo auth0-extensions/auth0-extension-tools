@@ -252,11 +252,15 @@ The session manager will create a local session for the user (the "API Token") a
 The following snippet will generate the login URL to where the dashboard administrator needs to be redirected:
 
 ```js
+const nonce = generateNonceAndStoreInSession();
+const state = generateStateAndStoreInSession();
 const sessionManager = new tools.SessionManager('auth0.auth0.com', 'me.auth0.com', 'https://me.us.webtask.io/my-extension');
 const url = sessionManager.createAuthorizeUrl({
   redirectUri: 'https://me.us.webtask.io/my-extension/login/callback',
   scopes: 'read:clients read:connections',
-  expiration: 3600
+  expiration: 3600,
+  nonce: nonce,
+  state: state
 });
 ```
 

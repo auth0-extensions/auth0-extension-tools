@@ -52,19 +52,23 @@ function SessionManager(rta, domain, clientId) {
 
 SessionManager.prototype.createAuthorizeUrl = function(options) {
   if (options === null || options === undefined) {
-    return Promise.reject(new ArgumentError('Must provide the options'));
+    throw new ArgumentError('Must provide the options');
   }
 
   if (options.redirectUri === null || options.redirectUri === undefined) {
-    return Promise.reject(new ArgumentError('Must provide the redirectUri'));
+    throw new ArgumentError('Must provide the redirectUri');
   }
 
   if (options.nonce === null || options.nonce === undefined) {
-    return Promise.reject(new ArgumentError('Must provide the nonce'));
+    throw new ArgumentError('Must provide the nonce');
   }
 
   if (typeof options.redirectUri !== 'string' || options.redirectUri.length === 0) {
-    return Promise.reject(new ArgumentError('The provided redirectUri is invalid: ' + options.redirectUri));
+    throw new ArgumentError('The provided redirectUri is invalid: ' + options.redirectUri);
+  }
+
+  if (options.state !== undefined && (typeof options.state !== 'string' || options.state.length === 0)) {
+    throw new ArgumentError('The provided state is invalid: ' + options.state);
   }
 
   var scopes = 'openid name email';
@@ -72,7 +76,7 @@ SessionManager.prototype.createAuthorizeUrl = function(options) {
     scopes += ' ' + options.scopes;
   }
 
-  return [
+  var urlOptions = [
     'https://' + this.options.rta + '/authorize',
     '?client_id=' + encodeURIComponent(this.options.clientId),
     '&response_type=token id_token',
@@ -82,7 +86,9 @@ SessionManager.prototype.createAuthorizeUrl = function(options) {
     '&redirect_uri=' + encodeURIComponent(options.redirectUri),
     '&audience=' + encodeURIComponent(this.managementApiAudience),
     '&nonce=' + encodeURIComponent(options.nonce)
-  ].join('');
+  ];
+  if (options.state) urlOptions.push('&state=' + encodeURIComponent(options.state));
+  return urlOptions.join('');
 };
 
 SessionManager.prototype.validateToken = function(client, audience, token) {
@@ -99,7 +105,7 @@ SessionManager.prototype.validateToken = function(client, audience, token) {
       }
 
       const signingKey = key.publicKey || key.rsaPublicKey;
-      return jwt.verify(token, signingKey, { algorithms: [ 'RS256' ] }, function(err, payload) {
+      return jwt.verify(token, signingKey, { algorithms: ['RS256'] }, function(err, payload) {
         if (err) {
           return reject(err);
         }
@@ -109,7 +115,7 @@ SessionManager.prototype.validateToken = function(client, audience, token) {
         }
 
         if (!(payload && (payload.aud === audience
-          || (Array.isArray(payload.aud) && payload.aud.indexOf(audience) > -1)))) {
+            || (Array.isArray(payload.aud) && payload.aud.indexOf(audience) > -1)))) {
           return reject(new UnauthorizedError('Audience mismatch for: ' + audience));
         }
 
@@ -195,7 +201,6 @@ SessionManager.prototype.create = function(idToken, accessToken, options) {
       });
     });
 };
-
 
 /**
  * Module exports.
