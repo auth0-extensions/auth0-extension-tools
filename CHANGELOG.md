@@ -1,3 +1,9 @@
+## [1.3.1] - 2017-01-09
+
+### Changes
+
+- Set nonce to random value if not specified in options to createAuthorizeUrl to undo breaking change
+
 ## [1.3.0] - 2017-01-04
 
 ### Changes

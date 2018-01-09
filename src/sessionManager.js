@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Promise = require('bluebird');
 const jwksClient = require('jwks-rsa');
+const crypto = require('crypto');
 
 const ArgumentError = require('./errors').ArgumentError;
 const UnauthorizedError = require('./errors').UnauthorizedError;
@@ -60,7 +61,10 @@ SessionManager.prototype.createAuthorizeUrl = function(options) {
   }
 
   if (options.nonce === null || options.nonce === undefined) {
-    throw new ArgumentError('Must provide the nonce');
+    // TODO: throw new ArgumentError('Must provide the nonce');
+    options.nonce = crypto.randomBytes(16).toString('hex');
+  } else if (typeof options.nonce !== 'string' || options.nonce.length === 0) {
+    throw new ArgumentError('The provided nonce is invalid: ' + options.nonce);
   }
 
   if (typeof options.redirectUri !== 'string' || options.redirectUri.length === 0) {
