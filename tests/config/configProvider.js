@@ -89,3 +89,33 @@ tape('configProvider#fromWebtaskContext should allow overwriting the RTA', funct
   t.equal(provider('AUTH0_RTA'), 'login.myappliance.local');
   t.end();
 });
+
+tape('configProvider#fromWebtaskContext should accept a seed object literal', function(t) {
+  const seed = { seedKey: 'seedValue' };
+  const provider = configProvider.fromWebtaskContext({}, seed);
+
+  t.ok(provider);
+  t.equal(provider('seedKey'), 'seedValue');
+  t.end();
+});
+
+tape('configProvider#fromWebtaskContext should override seeded values', function(t) {
+  const seed = { seedKey: 'seedValue' };
+  const provider = configProvider.fromWebtaskContext({
+    params: { seedKey: 'anotherValue' },
+    secrets: {}
+  }, seed);
+
+  t.ok(provider);
+  t.equal(provider('seedKey'), 'anotherValue');
+  t.end();
+});
+
+tape('configProvider#fromWebtaskContext a seed must be able to override the AUTH0_RTA', function(t) {
+  const seed = { AUTH0_RTA: 'not.auth0.auth0.com' };
+  const provider = configProvider.fromWebtaskContext({}, seed);
+
+  t.ok(provider);
+  t.equal(provider('AUTH0_RTA'), 'not.auth0.auth0.com');
+  t.end();
+});
