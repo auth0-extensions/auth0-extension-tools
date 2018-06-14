@@ -315,7 +315,7 @@ tape('SessionManager#create should return error if kid for access_token is inval
     })
     .catch(function(err) {
       t.ok(err);
-      t.ok(err.name === 'SigningKeyNotFoundError');
+      t.ok(err.name === 'UnauthorizedError');
       t.end();
     });
 });
@@ -542,12 +542,14 @@ tape('SessionManager#create should generate a session (api token)', function(t) 
     iss: 'https://auth0.auth0.com/',
     aud: 'http://app.bar.com',
     sub: 'google|me@example.com',
+    exp: new Date().getTime(),
     email: 'me@example.com'
   });
   const accessToken = tokens.sign(certs.bar.private, 'key2', {
     iss: 'https://auth0.auth0.com/',
     sub: 'google|me@example.com',
     azp: 'http://app.bar.com',
+    exp: new Date().getTime(),
     aud: [
       'https://auth0.auth0.com/userinfo',
       'https://bar.auth0.local/api/v2/'
