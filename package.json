@@ -1,6 +1,6 @@
 {
   "name": "auth0-extension-tools",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
