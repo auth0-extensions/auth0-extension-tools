@@ -1,6 +1,8 @@
 function UnauthorizedError(message) {
   Error.call(this, message);
-  Error.captureStackTrace(this, this.constructor);
+  if (process.env.NODE_ENV !== 'production') {
+    Error.captureStackTrace(this, this.constructor);
+  }
   this.name = 'UnauthorizedError';
   this.message = message;
   this.status = 401;
