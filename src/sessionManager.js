@@ -83,7 +83,7 @@ SessionManager.prototype.createAuthorizeUrl = function(options) {
   var urlOptions = [
     'https://' + this.options.rta + '/authorize',
     '?client_id=' + encodeURIComponent(this.options.clientId),
-    '&response_type=token id_token',
+    '&response_type=' + options.responseType || 'token id_token',
     '&response_mode=form_post',
     '&scope=' + encodeURIComponent(scopes),
     '&expiration=' + (options.expiration || 36000),
