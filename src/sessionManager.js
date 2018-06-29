@@ -194,9 +194,12 @@ SessionManager.prototype.create = function(idToken, accessToken, options) {
       const payload = {
         sub: tokens[0].sub,
         email: tokens[0].email,
-        exp: tokens[0].exp,
-        access_token: accessToken
+        exp: tokens[0].exp
       };
+
+      if (!options.noAccessToken) {
+        payload.access_token = accessToken;
+      }
 
       return jwt.sign(payload, options.secret, {
         algorithm: 'HS256',
