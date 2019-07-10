@@ -204,10 +204,10 @@ asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
 
-auth0@^2.17.0:
-  version "2.17.1"
-  resolved "https://registry.yarnpkg.com/auth0/-/auth0-2.17.1.tgz#267910eda5f6be9b12f1ae58bc7a86805576ae08"
-  integrity sha512-1AcQQoojpq/L8+YJZEqFnPU2YMp0B8OtvPow4sLxrd3zn++NRF0+tZJJgaC2J9UHPSm7ID9ra0pt5JrGKy4ugw==
+auth0@^2.18.0:
+  version "2.18.0"
+  resolved "https://registry.yarnpkg.com/auth0/-/auth0-2.18.0.tgz#9360d7b2cb7bb201dc44c774032cfeefd8762a98"
+  integrity sha512-ke++pr8Iaq1niuNQt0CLj+RlEoOFwk1LeTgsI30StvL4bYHT+rO0kaFr7QdWdXON5dDHxqtaVDE9p7OvxBcF5Q==
   dependencies:
     bluebird "^2.10.2"
     jsonwebtoken "^8.3.0"
