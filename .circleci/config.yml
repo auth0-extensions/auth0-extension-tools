@@ -3,18 +3,15 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:carbon
+
 jobs:
   test:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:carbon
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    working_directory: ~/repo
+    <<: *defaults
 
     steps:
       - checkout
@@ -57,6 +54,7 @@ workflows:
   test_and_deploy:
     jobs:
       - test:
+          # only runs when commit with tag in /^v.*/ pattern
           filters:
             tags:
               only: /^v.*/
