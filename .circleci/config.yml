@@ -38,35 +38,35 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths: .
-  # deploy:
-  #     <<: *defaults
-  #     steps:
-  #       - attach_workspace:
-  #           at: ~/repo
-  #       - run:
-  #           name: Authenticate with registry
-  #           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
-  #       - run:
-  #           name: Publish package
-  #           command: npm publish
+  deploy:
+      <<: *defaults
+      steps:
+        - attach_workspace:
+            at: ~/repo
+        - run:
+            name: Authenticate with registry
+            command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+        - run:
+            name: Publish package
+            command: npm publish
 workflows: 
   version: 2
   test:
     jobs:
       - test
-  # test_and_deploy:
-  #   jobs:
-  #     - test:
-  #         filters:
-  #           tags:
-  #             only: /^v.*/
-  #           branches:
-  #             only: master
-  #     - deploy:
-  #         requires:
-  #           - test
-  #         filters:
-  #           branches:
-  #             ignore: /.*/
-  #           tags:
-  #             only: /^v.*/
+  test_and_deploy:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
