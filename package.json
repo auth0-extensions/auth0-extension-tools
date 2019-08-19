@@ -1,6 +1,6 @@
 {
   "name": "auth0-extension-tools",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
@@ -9,13 +9,13 @@
     "bluebird": "^3.4.1",
     "jsonwebtoken": "^8.3.0",
     "jwks-rsa": "1.2.0",
-    "lodash": "4.17.12",
+    "lodash": "4.17.13",
     "lru-memoizer": "1.11.2",
     "ms": "2.0.0",
     "node-uuid": "^1.4.7",
     "promise-retry": "^1.1.1",
     "superagent": "3.8.1",
-    "webtask-tools": "^3.2.0"
+    "webtask-tools": "^3.4.0"
   },
   "devDependencies": {
     "autochecker": "^0.9.2",
