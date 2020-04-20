@@ -87,7 +87,7 @@ module.exports.getClient = function(options) {
       throw new ArgumentError('The provided accessToken is invalid');
     }
 
-    return Promise.resolve(new auth0.ManagementClient({ domain: options.domain, token: options.accessToken }));
+    return Promise.resolve(new auth0.ManagementClient({ domain: options.domain, token: options.accessToken, headers: options.headers }));
   }
 
   if (options.clientId === null || options.clientId === undefined) {
@@ -108,6 +108,6 @@ module.exports.getClient = function(options) {
 
   return getAccessTokenCached(options.domain, options.clientId, options.clientSecret)
     .then(function(token) {
-      return new auth0.ManagementClient({ domain: options.domain, token: token });
+      return new auth0.ManagementClient({ domain: options.domain, token: token, headers: options.headers });
     });
 };
