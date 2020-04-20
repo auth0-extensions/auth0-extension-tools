@@ -275,6 +275,16 @@ tape('managementApi#getClient should create a client for accessToken', function(
     });
 });
 
+tape('managementApi#getClient should create a client for accessToken with headers', function(t) {
+  managementApi.getClient({ domain: 'foo', accessToken: 'def', headers: { customHeader: 'custom' } })
+    .then(function(auth0) {
+      t.ok(auth0);
+      const keys = Object.keys(auth0);
+      keys.forEach(key => auth0[key].resource && t.equal(auth0[key].resource.restClient.options.headers.customHeader, 'custom'));
+      t.end();
+    });
+});
+
 tape('managementApi#getClient should create a client for clientId/secret', function(t) {
   nock('https://tenant.auth0cluster.com')
     .post('/oauth/token')
