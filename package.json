@@ -4,7 +4,7 @@
   "description": "A set of tools and utilities to simplify the development of Auth0 Extensions.",
   "main": "src/index.js",
   "dependencies": {
-    "async": "2.1.2",
+    "async": "3.2.2",
     "auth0": "^2.23.0",
     "bluebird": "^3.4.1",
     "jsonwebtoken": "^8.3.0",
