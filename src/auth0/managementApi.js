@@ -1,7 +1,6 @@
-const ms = require('ms');
+const promisify = require('util').promisify
 const jwt = require('jsonwebtoken');
 const auth0 = require('auth0');
-const Promise = require('bluebird');
 const memoizer = require('lru-memoizer');
 const request = require('superagent');
 
@@ -37,7 +36,7 @@ const getAccessToken = function(domain, clientId, clientSecret) {
   });
 };
 
-const getAccessTokenCached = Promise.promisify(
+const getAccessTokenCached = promisify(
   memoizer({
     load: function(domain, clientId, clientSecret, callback) {
       getAccessToken(domain, clientId, clientSecret)
@@ -63,7 +62,7 @@ const getAccessTokenCached = Promise.promisify(
       }
     },
     max: 100,
-    maxAge: ms('1h')
+    maxAge: 1000 * 60 * 60
   }
 ));
 

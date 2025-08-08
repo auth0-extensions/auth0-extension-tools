@@ -1,5 +1,4 @@
-const _ = require('lodash');
-const uuid = require('node-uuid');
+const crypto = require('crypto');
 const promiseRetry = require('promise-retry');
 
 const seriesQueue = require('./seriesQueue');
@@ -104,7 +103,7 @@ BlobRecordProvider.prototype.getAll = function(collectionName) {
 BlobRecordProvider.prototype.get = function(collectionName, identifier) {
   return this.getAll(collectionName)
     .then(function(records) {
-      const record = _.find(records, function(r) { return r._id === identifier; });
+      const record = records.find(function(r) { return r._id === identifier; });
       if (!record) {
         return Promise.reject(
           new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.')
@@ -127,10 +126,10 @@ BlobRecordProvider.prototype.create = function(collectionName, record) {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
         if (!record._id) {
-          record._id = uuid.v4();
+          record._id = crypto.randomUUID();
         }
 
-        const index = _.findIndex(data[collectionName], function(r) { return r._id === record._id; });
+        const index = data[collectionName].findIndex(function(r) { return r._id === record._id; });
         if (index > -1) {
           return Promise.reject(
             new ValidationError('The record ' + record._id + ' in ' + collectionName + ' already exists.')
@@ -162,13 +161,13 @@ BlobRecordProvider.prototype.update = function(collectionName, identifier, recor
   return this.write(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
-        const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
+        const index = data[collectionName].findIndex(function(r) { return r._id === identifier; });
         if (index < 0 && !upsert) {
           throw new NotFoundError('The record ' + identifier + ' in ' + collectionName + ' does not exist.');
         }
 
         // Update record.
-        const updatedRecord = _.extend({ _id: identifier }, index < 0 ? { } : data[collectionName][index], record);
+        const updatedRecord = Object.assign({ _id: identifier }, index < 0 ? { } : data[collectionName][index], record);
         if (index < 0) {
           data[collectionName].push(updatedRecord);
         } else {
@@ -194,7 +193,7 @@ BlobRecordProvider.prototype.delete = function(collectionName, identifier) {
   return this.write(storageContext, function() {
     return getDataForCollection(storageContext, collectionName)
       .then(function(data) {
-        const index = _.findIndex(data[collectionName], function(r) { return r._id === identifier; });
+        const index = data[collectionName].findIndex(function(r) { return r._id === identifier; });
         if (index < 0) {
           return false;
         }

@@ -1,254 +1,246 @@
 const fs = require('fs');
-const tape = require('tape');
+const { expect } = require('chai');
 const path = require('path');
 const mock = require('mock-fs');
 
 const FileStorageContext = require('../../src/storage/fileStorageContext');
 const extensionTools = require('../../src');
 
-tape('extension-tools should expose the FileStorageContext', function(t) {
-  const Ctx = extensionTools.FileStorageContext;
-  const ctx = new Ctx('./foo.json');
-  t.ok(ctx);
-  t.ok(ctx.constructor === FileStorageContext);
-  t.end();
-});
-
-tape('FileStorageContext#constructor should throw error if path is not provided', function(t) {
-  try {
-    new FileStorageContext();
-  } catch (e) {
-    t.ok(e);
-    t.end();
-  }
-});
-
-tape('FileStorageContext#constructor should throw error if path is invalid', function(t) {
-  try {
-    new FileStorageContext(339);
-  } catch (e) {
-    t.ok(e);
-    t.end();
-  }
-});
-
-tape('FileStorageContext#read should return defaultData if files does not exist', function(t) {
-  const ctx = new FileStorageContext(path.join(__dirname, './data.json'), { mergeWrites: true, defaultData: { foo: 'bar' } });
-  ctx.read()
-    .then(function(data) {
-      t.ok(data);
-      t.ok(data.foo);
-      t.equal(data.foo, 'bar');
-      t.end();
-    });
-});
-
-tape('FileStorageContext#read should fallback to empty object if data is empty', function(t) {
-  const ctx = new FileStorageContext(path.join(__dirname, './data.json'));
-  ctx.read()
-    .then(function(data) {
-      t.ok(data);
-      t.equal(JSON.stringify(data), '{}');
-      t.end();
-    });
-});
-
-tape('FileStorageContext#read should handle errors correctly when read permissions are denied', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-
-  mock({
-    [filePath]: mock.file({
-      content: 'file content here',
-      mode: 0
-    })
+describe('FileStorageContext', function() {
+  it('should expose the FileStorageContext in extension-tools', function() {
+    const Ctx = extensionTools.FileStorageContext;
+    const ctx = new Ctx('./foo.json');
+    expect(ctx).to.be.ok;
+    expect(ctx.constructor).to.equal(FileStorageContext);
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
-
-  ctx.read()
-    .catch(function(err) {
-      mock.restore();
-      t.ok(err);
-      t.end();
-    });
-});
-
-tape('FileStorageContext#read should read files correctly', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: '{ "application": "my-app" }'
+  it('should throw error if path is not provided in constructor', function() {
+    expect(function() {
+      new FileStorageContext();
+    }).to.throw();
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
-  ctx.read()
-    .then(function(data) {
-      mock.restore();
-      t.ok(data);
-      t.ok(data.application);
-      t.equal(data.application, 'my-app');
-      t.end();
-    });
-});
-
-tape('FileStorageContext#read should return defaultData if file is empty', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: ''
+  it('should throw error if path is invalid in constructor', function() {
+    expect(function() {
+      new FileStorageContext(339);
+    }).to.throw();
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
-  ctx.read()
-    .then(function(data) {
-      mock.restore();
-      t.ok(data);
-      t.ok(data.foo);
-      t.equal(data.foo, 'bar');
-      t.end();
-    });
-});
-
-tape('FileStorageContext#read should write files correctly', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: '{ "application": "my-app" }'
+  it('should return defaultData if file does not exist', function() {
+    const ctx = new FileStorageContext(path.join(__dirname, './data.json'), { mergeWrites: true, defaultData: { foo: 'bar' } });
+    return ctx.read()
+      .then(function(data) {
+        expect(data).to.be.ok;
+        expect(data.foo).to.be.ok;
+        expect(data.foo).to.equal('bar');
+      });
   });
 
-  const ctx = new FileStorageContext(filePath);
-  ctx.write({ application: 'my-new-app' })
-    .then(function() {
-      const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      mock.restore();
-      t.ok(file);
-      t.ok(file.application);
-      t.equal(file.application, 'my-new-app');
-      t.end();
-    });
-});
-
-tape('FileStorageContext#read should handle invalid json when reading the file', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: '{ application": "my-app" }'
+  it('should fallback to empty object if data is empty', function() {
+    const ctx = new FileStorageContext(path.join(__dirname, './data.json'));
+    return ctx.read()
+      .then(function(data) {
+        expect(data).to.be.ok;
+        expect(JSON.stringify(data)).to.equal('{}');
+      });
   });
 
-  const ctx = new FileStorageContext(filePath);
-  ctx.read()
-    .catch(function(e) {
-      mock.restore();
-      t.ok(e);
-      t.end();
-    });
-});
+  it('should handle errors correctly when read permissions are denied', function() {
+    const filePath = path.join(__dirname, './data.json');
 
-tape('FileStorageContext#write should merge objects if mergeWrites is true', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: '{ "application": "my-app" }'
+    mock({
+      [filePath]: mock.file({
+        content: 'file content here',
+        mode: 0
+      })
+    });
+
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
+
+    return ctx.read()
+      .then(function() {
+        throw new Error('Should have thrown an error');
+      })
+      .catch(function(err) {
+        mock.restore();
+        expect(err).to.be.ok;
+      });
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true });
-  ctx.write({ version: '123' })
-    .then(function() {
-      const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      mock.restore();
-      t.ok(file);
-      t.ok(file.application);
-      t.equal(file.application, 'my-app');
-      t.ok(file.version);
-      t.equal(file.version, '123');
-      t.end();
+  it('should read files correctly', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: '{ "application": "my-app" }'
     });
-});
 
-tape('FileStorageContext#write should merge objects if mergeWrites is true and respect ordering', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: '{ "foo": "bar", "application": "my-app" }'
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
+    return ctx.read()
+      .then(function(data) {
+        mock.restore();
+        expect(data).to.be.ok;
+        expect(data.application).to.be.ok;
+        expect(data.application).to.equal('my-app');
+      });
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true });
-  ctx.write({ version: '123', application: 'my-new-app' })
-    .then(function() {
-      const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      mock.restore();
-      t.ok(file);
-      t.ok(file.foo);
-      t.equal(file.foo, 'bar');
-      t.ok(file.application);
-      t.equal(file.application, 'my-new-app');
-      t.ok(file.version);
-      t.equal(file.version, '123');
-      t.end();
+  it('should return defaultData if file is empty', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: ''
     });
-});
 
-tape('FileStorageContext#write should merge objects if mergeWrites is false', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: '{ "application": "my-app" }'
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true, defaultData: { foo: 'bar' } });
+    return ctx.read()
+      .then(function(data) {
+        mock.restore();
+        expect(data).to.be.ok;
+        expect(data.foo).to.be.ok;
+        expect(data.foo).to.equal('bar');
+      });
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: false });
-  ctx.write({ version: '123' })
-    .then(function() {
-      const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      mock.restore();
-      t.ok(file);
-      t.notOk(file.application);
-      t.ok(file.version);
-      t.equal(file.version, '123');
-      t.end();
+  it('should write files correctly', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: '{ "application": "my-app" }'
     });
-});
 
-tape('FileStorageContext#write should handle errors correctly when writing problematic objects', function(t) {
-  const filePath = path.join(__dirname, './data.json');
-  mock({
-    [filePath]: mock.file({
-      content: '{ "application": "my-app" }',
-      mode: 256
-    })
+    const ctx = new FileStorageContext(filePath);
+    return ctx.write({ application: 'my-new-app' })
+      .then(function() {
+        const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        mock.restore();
+        expect(file).to.be.ok;
+        expect(file.application).to.be.ok;
+        expect(file.application).to.equal('my-new-app');
+      });
   });
 
-  const a = { foo: 'bar' };
-  const b = { bar: 'foo' };
-
-  a.b = b;
-  b.a = a;
-
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true });
-  ctx.write({ a: a, b: b })
-    .catch(function(err) {
-      mock.restore();
-      t.ok(err);
-      t.ok(err.name);
-      t.equal(err.name, 'TypeError');
-      t.end();
+  it('should handle invalid json when reading the file', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: '{ application": "my-app" }'
     });
-});
 
-tape('FileStorageContext#write should handle errors correctly when write permissions are denied', function(t) {
-  // mock-fs and permissions seem to have issues when running in docker
-  if (fs.existsSync('/.dockerenv')) {
-    return t.end();
-  }
-
-  const filePath = '/foo/bar.json';
-  mock({
-    [filePath]: mock.file({
-      content: '{ "application": "my-app" }',
-      mode: 256
-    })
+    const ctx = new FileStorageContext(filePath);
+    return ctx.read()
+      .then(function() {
+        throw new Error('Should have thrown an error');
+      })
+      .catch(function(e) {
+        mock.restore();
+        expect(e).to.be.ok;
+      });
   });
 
-  const ctx = new FileStorageContext(filePath, { mergeWrites: true });
-  return ctx.write({ version: '123' })
-    .then(function() {
-      t.fail('Should not write the file.');
-    })
-    .catch(function(err) {
-      mock.restore();
-      t.ok(err, 'should throw error');
-      t.end();
+  it('should merge objects if mergeWrites is true', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: '{ "application": "my-app" }'
     });
+
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true });
+    return ctx.write({ version: '123' })
+      .then(function() {
+        const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        mock.restore();
+        expect(file).to.be.ok;
+        expect(file.application).to.be.ok;
+        expect(file.application).to.equal('my-app');
+        expect(file.version).to.be.ok;
+        expect(file.version).to.equal('123');
+      });
+  });
+
+  it('should merge objects if mergeWrites is true and respect ordering', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: '{ "foo": "bar", "application": "my-app" }'
+    });
+
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true });
+    return ctx.write({ version: '123', application: 'my-new-app' })
+      .then(function() {
+        const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        mock.restore();
+        expect(file).to.be.ok;
+        expect(file.foo).to.be.ok;
+        expect(file.foo).to.equal('bar');
+        expect(file.application).to.be.ok;
+        expect(file.application).to.equal('my-new-app');
+        expect(file.version).to.be.ok;
+        expect(file.version).to.equal('123');
+      });
+  });
+
+  it('should not merge objects if mergeWrites is false', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: '{ "application": "my-app" }'
+    });
+
+    const ctx = new FileStorageContext(filePath, { mergeWrites: false });
+    return ctx.write({ version: '123' })
+      .then(function() {
+        const file = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        mock.restore();
+        expect(file).to.be.ok;
+        expect(file.application).to.not.be.ok;
+        expect(file.version).to.be.ok;
+        expect(file.version).to.equal('123');
+      });
+  });
+
+  it('should handle errors correctly when writing problematic objects', function() {
+    const filePath = path.join(__dirname, './data.json');
+    mock({
+      [filePath]: mock.file({
+        content: '{ "application": "my-app" }',
+        mode: 256
+      })
+    });
+
+    const a = { foo: 'bar' };
+    const b = { bar: 'foo' };
+
+    a.b = b;
+    b.a = a;
+
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true });
+    return ctx.write({ a: a, b: b })
+      .then(function() {
+        throw new Error('Should have thrown an error');
+      })
+      .catch(function(err) {
+        mock.restore();
+        expect(err).to.be.ok;
+        expect(err.name).to.be.ok;
+        expect(err.name).to.equal('TypeError');
+      });
+  });
+
+  it('should handle errors correctly when write permissions are denied', function() {
+    // mock-fs and permissions seem to have issues when running in docker
+    if (fs.existsSync('/.dockerenv')) {
+      return;
+    }
+
+    const filePath = '/foo/bar.json';
+    mock({
+      [filePath]: mock.file({
+        content: '{ "application": "my-app" }',
+        mode: 256
+      })
+    });
+
+    const ctx = new FileStorageContext(filePath, { mergeWrites: true });
+    return ctx.write({ version: '123' })
+      .then(function() {
+        throw new Error('Should not write the file.');
+      })
+      .catch(function(err) {
+        mock.restore();
+        expect(err, 'should throw error').to.be.ok;
+      });
+  });
 });

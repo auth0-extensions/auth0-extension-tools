@@ -1,110 +1,111 @@
-const tape = require('tape');
+const { expect } = require('chai');
 
 const webtaskStorage = require('../mocks/webtaskStorage');
 const extensionTools = require('../../src');
 const WebtaskStorageContext = require('../../src/storage/webtaskStorageContext');
 
-tape('extension-tools should expose the WebtaskStorageContext', function(t) {
-  const storage = webtaskStorage(null);
-  const Ctx = extensionTools.WebtaskStorageContext;
-  const ctx = new Ctx(storage);
-  t.ok(ctx);
-  t.ok(ctx.constructor === WebtaskStorageContext);
-  t.end();
-});
-
-tape('WebtaskStorageContext#constructor should throw error if storage object is not provided', function(t) {
-  try {
-    const ctx = new WebtaskStorageContext();
-  } catch (e) {
-    t.ok(e);
-    t.end();
-  }
-});
-
-tape('WebtaskStorageContext#constructor should return defaultData if data from webtask is null', function(t) {
-  const storage = webtaskStorage(null);
-
-  const ctx = new WebtaskStorageContext(storage, { defaultData: { foo: 'bar' } });
-  ctx.read()
-    .then(function(data) {
-      t.ok(data);
-      t.ok(data.foo);
-      t.equal(data.foo, 'bar');
-      t.end();
-    });
-});
-
-tape('WebtaskStorageContext#read should read storage correctly', function(t) {
-  const storage = webtaskStorage({ foo: 'other-bar' });
-
-  const ctx = new WebtaskStorageContext(storage, { defaultData: { foo: 'bar' } });
-  ctx.read()
-    .then(function(data) {
-      t.ok(data);
-      t.ok(data.foo);
-      t.equal(data.foo, 'other-bar');
-      t.end();
-    });
-});
-
-tape('WebtaskStorageContext#read should handle errors correctly when reading fails', function(t) {
-  const storage = webtaskStorage(new Error('foo'));
-
-  const ctx = new WebtaskStorageContext(storage);
-  ctx.read()
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.name);
-      t.equal(err.name, 'Error');
-      t.end();
-    });
-});
-
-tape('WebtaskStorageContext#write should write files correctly', function(t) {
-  var data = null;
-  const storage = webtaskStorage({ application: 'my-app' }, function(updatedData) {
-    data = updatedData;
+describe('WebtaskStorageContext', function() {
+  it('should be exposed in extension-tools', function() {
+    const storage = webtaskStorage(null);
+    const Ctx = extensionTools.WebtaskStorageContext;
+    const ctx = new Ctx(storage);
+    expect(ctx).to.be.ok;
+    expect(ctx.constructor).to.equal(WebtaskStorageContext);
   });
 
-  const ctx = new WebtaskStorageContext(storage);
-  ctx.write({ application: 'my-new-app' })
-    .then(function() {
-      t.ok(data);
-      t.ok(data.application);
-      t.equal(data.application, 'my-new-app');
-      t.end();
+  it('should throw error if storage object is not provided in constructor', function() {
+    expect(function() {
+      const ctx = new WebtaskStorageContext();
+    }).to.throw();
+  });
+
+  it('should return defaultData if data from webtask is null', function() {
+    const storage = webtaskStorage(null);
+
+    const ctx = new WebtaskStorageContext(storage, { defaultData: { foo: 'bar' } });
+    return ctx.read()
+      .then(function(data) {
+        expect(data).to.be.ok;
+        expect(data.foo).to.be.ok;
+        expect(data.foo).to.equal('bar');
+      });
+  });
+
+  it('should read storage correctly', function() {
+    const storage = webtaskStorage({ foo: 'other-bar' });
+
+    const ctx = new WebtaskStorageContext(storage, { defaultData: { foo: 'bar' } });
+    return ctx.read()
+      .then(function(data) {
+        expect(data).to.be.ok;
+        expect(data.foo).to.be.ok;
+        expect(data.foo).to.equal('other-bar');
+      });
+  });
+
+  it('should handle errors correctly when reading fails', function() {
+    const storage = webtaskStorage(new Error('foo'));
+
+    const ctx = new WebtaskStorageContext(storage);
+    return ctx.read()
+      .then(function() {
+        throw new Error('Should have thrown an error');
+      })
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.name).to.be.ok;
+        expect(err.name).to.equal('Error');
+      });
+  });
+
+  it('should write files correctly', function() {
+    var data = null;
+    const storage = webtaskStorage({ application: 'my-app' }, function(updatedData) {
+      data = updatedData;
     });
-});
 
-tape('WebtaskStorageContext#write should handle errors correctly when writing problematic objects', function(t) {
-  const storage = webtaskStorage({ });
+    const ctx = new WebtaskStorageContext(storage);
+    return ctx.write({ application: 'my-new-app' })
+      .then(function() {
+        expect(data).to.be.ok;
+        expect(data.application).to.be.ok;
+        expect(data.application).to.equal('my-new-app');
+      });
+  });
 
-  const a = { foo: 'bar' };
-  const b = { bar: 'foo' };
+  it('should handle errors correctly when writing problematic objects', function() {
+    const storage = webtaskStorage({ });
 
-  a.b = b;
-  b.a = a;
+    const a = { foo: 'bar' };
+    const b = { bar: 'foo' };
 
-  const ctx = new WebtaskStorageContext(storage);
-  ctx.write({ a: a, b: b })
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.name);
-      t.equal(err.name, 'TypeError');
-      t.end();
-    });
-});
+    a.b = b;
+    b.a = a;
 
-tape('WebtaskStorageContext#write should handle errors correctly when writing fails', function(t) {
-  const storage = webtaskStorage(new Error('foo'));
+    const ctx = new WebtaskStorageContext(storage);
+    return ctx.write({ a: a, b: b })
+      .then(function() {
+        throw new Error('Should have thrown an error');
+      })
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.name).to.be.ok;
+        expect(err.name).to.equal('TypeError');
+      });
+  });
 
-  const ctx = new WebtaskStorageContext(storage);
-  ctx.write({ foo: 'bar' })
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.name);
-      t.equal(err.name, 'Error');
-      t.end();
-    });
+  it('should handle errors correctly when writing fails', function() {
+    const storage = webtaskStorage(new Error('foo'));
+
+    const ctx = new WebtaskStorageContext(storage);
+    return ctx.write({ foo: 'bar' })
+      .then(function() {
+        throw new Error('Should have thrown an error');
+      })
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.name).to.be.ok;
+        expect(err.name).to.equal('Error');
+      });
+  });
 });

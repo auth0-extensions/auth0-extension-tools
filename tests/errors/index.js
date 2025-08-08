@@ -1,14 +1,15 @@
-const tape = require('tape');
+const { expect } = require('chai');
 
 const extensionTools = require('../../src');
 
-tape('extension-tools should expose all errors', function(t) {
-  t.ok(extensionTools.ArgumentError);
-  t.ok(extensionTools.ForbiddenError);
-  t.ok(extensionTools.HookTokenError);
-  t.ok(extensionTools.ManagementApiError);
-  t.ok(extensionTools.NotFoundError);
-  t.ok(extensionTools.UnauthorizedError);
-  t.ok(extensionTools.ValidationError);
-  t.end();
+describe('Error exports', function() {
+  it('should expose all errors in extension-tools', function() {
+    expect(extensionTools.ArgumentError).to.be.ok;
+    expect(extensionTools.ForbiddenError).to.be.ok;
+    expect(extensionTools.HookTokenError).to.be.ok;
+    expect(extensionTools.ManagementApiError).to.be.ok;
+    expect(extensionTools.NotFoundError).to.be.ok;
+    expect(extensionTools.UnauthorizedError).to.be.ok;
+    expect(extensionTools.ValidationError).to.be.ok;
+  });
 });
