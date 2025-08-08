@@ -1,4 +1,4 @@
-const promisify = require('util').promisify
+const promisify = require('util').promisify;
 const jwt = require('jsonwebtoken');
 const auth0 = require('auth0');
 const memoizer = require('lru-memoizer');
