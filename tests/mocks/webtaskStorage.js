@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 module.exports = function(data, onDataChanged, beforeDataChanged) {
   var webtaskData = data;
   return {
@@ -7,7 +5,7 @@ module.exports = function(data, onDataChanged, beforeDataChanged) {
       if (data && data.name === 'Error') {
         return cb(data);
       }
-      return cb(null, _.cloneDeep(webtaskData));
+      return cb(null, JSON.parse(JSON.stringify(webtaskData)));
     },
     set: function(newData, opt, cb) {
       if (data && data.name === 'Error') {

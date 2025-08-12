@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const Promise = require('bluebird');
 const jwksClient = require('jwks-rsa');
 const crypto = require('crypto');
 

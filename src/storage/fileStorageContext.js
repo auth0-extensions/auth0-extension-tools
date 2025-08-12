@@ -1,6 +1,4 @@
-const _ = require('lodash');
 const fs = require('fs');
-const Promise = require('bluebird');
 
 const ArgumentError = require('../errors').ArgumentError;
 
@@ -69,7 +67,7 @@ FileStorageContext.prototype.write = function(payload) {
     writePromise = writePromise.then(function(data) {
       return ctx.read()
         .then(function(originalData) {
-          return _.extend({ }, originalData, data);
+          return Object.assign({ }, originalData, data);
         });
     });
   }

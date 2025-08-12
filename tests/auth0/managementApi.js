@@ -1,4 +1,4 @@
-const tape = require('tape');
+const { expect } = require('chai');
 const nock = require('nock');
 const jwt = require('jsonwebtoken');
 
@@ -7,294 +7,325 @@ const ArgumentError = require('../../src/errors').ArgumentError;
 const ManagementApiError = require('../../src/errors').ManagementApiError;
 const managementApi = require('../../src/auth0/managementApi');
 
-tape('extension-tools should expose the managementApiHelper', function(t) {
-  t.ok(extensionTools.managementApi === managementApi);
-  t.end();
-});
+describe('errors', function() {
+  it('extension-tools should expose the managementApiHelper', function() {
+    expect(extensionTools.managementApi === managementApi).to.be.ok;
+  });
 
-tape('managementApi#getAccessToken should handle network errors correctly', function(t) {
-  managementApi.getAccessToken('foo.some.domain.tld', 'myclient', 'mysecret')
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.code);
-      t.equal(err.code, 'ENOTFOUND');
-      t.end();
-    });
-});
+  it('managementApi#getAccessToken should handle network errors correctly', function() {
+    managementApi
+      .getAccessToken('foo.some.domain.tld', 'myclient', 'mysecret')
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.code).to.be.ok;
+        expect(err.code).to.equal('ENOTFOUND');
+      });
+  });
 
-tape('managementApi#getAccessToken should handle unauthorized errors correctly', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(401, 'Unauthorized');
+  it('managementApi#getAccessToken should handle unauthorized errors correctly', function() {
+    nock('https://tenant.auth0cluster.com')
+      .post('/oauth/token')
+      .reply(401, 'Unauthorized');
 
-  managementApi.getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.status);
-      t.equal(err.status, 401);
-      t.equal(err.code, 'unauthorized');
-      t.ok(err instanceof ManagementApiError);
-      t.end();
-      nock.cleanAll();
-    });
-});
+    managementApi
+      .getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.status).to.be.ok;
+        expect(err.status).to.equal(401);
+        expect(err.code).to.equal('unauthorized');
+        expect(err instanceof ManagementApiError).to.be.ok;
+        nock.cleanAll();
+      });
+  });
 
-tape('managementApi#getAccessToken should handle unknown errors correctly', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(200, 'foo');
+  it('managementApi#getAccessToken should handle unknown errors correctly', function() {
+    nock('https://tenant.auth0cluster.com')
+      .post('/oauth/token')
+      .reply(200, 'foo');
 
-  managementApi.getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.status);
-      t.equal(err.status, 400);
-      t.equal(err.code, 'unknown_error');
-      t.ok(err instanceof ManagementApiError);
-      t.end();
-      nock.cleanAll();
-    });
-});
+    managementApi
+      .getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.status).to.be.ok;
+        expect(err.status).to.equal(400);
+        expect(err.code).to.equal('unknown_error');
+        expect(err instanceof ManagementApiError).to.be.ok;
+        nock.cleanAll();
+      });
+  });
 
-tape('managementApi#getAccessToken should handle forbidden errors correctly', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(403, {
+  it('managementApi#getAccessToken should handle forbidden errors correctly', function() {
+    nock('https://tenant.auth0cluster.com').post('/oauth/token').reply(403, {
       error: 'access_denied',
-      error_description: 'Client is not authorized to access .... You might probably want to create a .. associated to this API.'
+      error_description:
+        'Client is not authorized to access .... You might probably want to create a .. associated to this API.'
     });
 
-  managementApi.getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
-    .catch(function(err) {
-      t.ok(err);
-      t.ok(err.status);
-      t.equal(err.status, 403);
-      t.equal(err.code, 'access_denied');
-      t.ok(err instanceof ManagementApiError);
-      t.end();
-      nock.cleanAll();
-    });
-});
+    managementApi
+      .getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.status).to.be.ok;
+        expect(err.status).to.equal(403);
+        expect(err.code).to.equal('access_denied');
+        expect(err instanceof ManagementApiError).to.be.ok;
+        nock.cleanAll();
+      });
+  });
 
-tape('managementApi#getAccessToken should return access token', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(200, {
+  it('managementApi#getAccessToken should return access token', function() {
+    nock('https://tenant.auth0cluster.com').post('/oauth/token').reply(200, {
       access_token: 'abc'
     });
 
-  managementApi.getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
-    .then(function(accessToken) {
-      t.ok(accessToken);
-      t.equal(accessToken, 'abc');
-      t.end();
-      nock.cleanAll();
-    });
-});
+    managementApi
+      .getAccessToken('tenant.auth0cluster.com', 'myclient', 'mysecret')
+      .then(function(accessToken) {
+        expect(accessToken).to.be.ok;
+        expect(accessToken).to.equal('abc');
+        nock.cleanAll();
+      });
+  });
 
-tape('managementApi#getAccessTokenCache should cache the access token', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(200, {
+  it('managementApi#getAccessTokenCache should cache the access token', function() {
+    nock('https://tenant.auth0cluster.com').post('/oauth/token').reply(200, {
       access_token: 'abc'
     });
-  nock('https://tenant.auth0cluster2.com')
-    .post('/oauth/token')
-    .reply(200, {
+    nock('https://tenant.auth0cluster2.com').post('/oauth/token').reply(200, {
       access_token: 'def'
     });
 
-  managementApi.getAccessTokenCached('tenant.auth0cluster.com', 'myclient', 'mysecret')
-    .then(function(accessToken) {
-      t.ok(accessToken);
-      t.equal(accessToken, 'abc');
+    managementApi
+      .getAccessTokenCached('tenant.auth0cluster.com', 'myclient', 'mysecret')
+      .then(function(accessToken) {
+        expect(accessToken).to.be.ok;
+        expect(accessToken).to.equal('abc');
 
-      managementApi.getAccessTokenCached('tenant.auth0cluster.com', 'myclient', 'mysecret')
-        .then(function(accessToken2) {
-          t.ok(accessToken2);
-          t.equal(accessToken2, 'abc');
+        managementApi
+          .getAccessTokenCached(
+            'tenant.auth0cluster.com',
+            'myclient',
+            'mysecret'
+          )
+          .then(function(accessToken2) {
+            expect(accessToken2).to.be.ok;
+            expect(accessToken2).to.equal('abc');
 
-          managementApi.getAccessTokenCached('tenant.auth0cluster2.com', 'myclient', 'mysecret')
-            .then(function(accessToken3) {
-              t.ok(accessToken3);
-              t.equal(accessToken3, 'def');
-              t.end();
-              nock.cleanAll();
-            });
-        });
-    });
-});
+            managementApi
+              .getAccessTokenCached(
+                'tenant.auth0cluster2.com',
+                'myclient',
+                'mysecret'
+              )
+              .then(function(accessToken3) {
+                expect(accessToken3).to.be.ok;
+                expect(accessToken3).to.equal('def');
+                nock.cleanAll();
+              });
+          });
+      });
+  });
 
-tape('managementApi#getAccessTokenCache should cache the access token based on its expiration', function(t) {
-  t.timeoutAfter(10000);
+  it('managementApi#getAccessTokenCache should cache the access token based on its expiration', function() {
+    this.timeout(10000);
 
-  const token = jwt.sign({ foo: 'bar' }, 'shhhhh', { expiresIn: '14s' });
+    const token = jwt.sign({ foo: 'bar' }, 'shhhhh', { expiresIn: '14s' });
 
-  nock('https://tenant.auth0cluster3.com')
-    .post('/oauth/token')
-    .reply(200, {
+    nock('https://tenant.auth0cluster3.com').post('/oauth/token').reply(200, {
       access_token: token
     });
 
-  managementApi.getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
-    .then(function(accessToken) {
-      t.ok(accessToken);
-      t.equal(accessToken, token);
+    managementApi
+      .getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
+      .then(function(accessToken) {
+        expect(accessToken).to.be.ok;
+        expect(accessToken).to.equal(token);
 
-      setTimeout(function() {
-        managementApi.getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
-          .then(function(accessToken2) {
-            t.ok(accessToken2);
-            t.equal(accessToken2, token);
+        setTimeout(function() {
+          managementApi
+            .getAccessTokenCached(
+              'tenant.auth0cluster3.com',
+              'myclient',
+              'mysecret'
+            )
+            .then(function(accessToken2) {
+              expect(accessToken2).to.be.ok;
+              expect(accessToken2).to.equal(token);
 
-            nock('https://tenant.auth0cluster3.com')
-              .post('/oauth/token')
-              .reply(200, {
-                access_token: 'def'
-              });
-
-            setTimeout(function() {
-              managementApi.getAccessTokenCached('tenant.auth0cluster3.com', 'myclient', 'mysecret')
-                .then(function(accessToken3) {
-                  t.ok(accessToken3);
-                  t.equal(accessToken3, 'def');
-                  t.end();
-                  nock.cleanAll();
+              nock('https://tenant.auth0cluster3.com')
+                .post('/oauth/token')
+                .reply(200, {
+                  access_token: 'def'
                 });
-            }, 2000);
-          });
-      }, 3000);
-    });
-});
 
-tape('managementApi#getAccessTokenCache should handle errors correctly', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(400, {
+              setTimeout(function() {
+                managementApi
+                  .getAccessTokenCached(
+                    'tenant.auth0cluster3.com',
+                    'myclient',
+                    'mysecret'
+                  )
+                  .then(function(accessToken3) {
+                    expect(accessToken3).to.be.ok;
+                    expect(accessToken3).to.equal('def');
+                    nock.cleanAll();
+                  });
+              }, 2000);
+            });
+        }, 3000);
+      });
+  });
+
+  it('managementApi#getAccessTokenCache should handle errors correctly', function() {
+    nock('https://tenant.auth0cluster.com').post('/oauth/token').reply(400, {
       error: 'foo'
     });
 
-  managementApi.getAccessTokenCached('tenant.auth0cluster.com', 'myclient', 'mysecret2')
-    .catch(function(err) {
-      t.ok(err);
-      t.equal(err.code, 'foo');
+    managementApi
+      .getAccessTokenCached('tenant.auth0cluster.com', 'myclient', 'mysecret2')
+      .catch(function(err) {
+        expect(err).to.be.ok;
+        expect(err.code).to.equal('foo');
 
-      nock('https://tenant.auth0cluster.com')
-        .post('/oauth/token')
-        .reply(200, {
-          access_token: 'abc'
-        });
+        nock('https://tenant.auth0cluster.com')
+          .post('/oauth/token')
+          .reply(200, {
+            access_token: 'abc'
+          });
 
-      managementApi.getAccessTokenCached('tenant.auth0cluster.com', 'myclient', 'mysecret2')
-        .then(function(accessToken2) {
-          t.ok(accessToken2);
-          t.equal(accessToken2, 'abc');
-          t.end();
-          nock.cleanAll();
-        });
-    });
-});
+        managementApi
+          .getAccessTokenCached(
+            'tenant.auth0cluster.com',
+            'myclient',
+            'mysecret2'
+          )
+          .then(function(accessToken2) {
+            expect(accessToken2).to.be.ok;
+            expect(accessToken2).to.equal('abc');
+            nock.cleanAll();
+          });
+      });
+  });
 
-tape('managementApi#getClient should validate options', function(t) {
-  try {
-    managementApi.getClient();
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+  it('managementApi#getClient should validate options', function() {
+    try {
+      managementApi.getClient();
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({});
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 1 });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({ domain: 1 });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 'foo' });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({ domain: 'foo' });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 'foo', accessToken: '' });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({ domain: 'foo', accessToken: '' });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 'foo', accessToken: 123 });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({ domain: 'foo', accessToken: 123 });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 'foo', clientId: 123 });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({ domain: 'foo', clientId: 123 });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 'foo', clientId: 'abc' });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({ domain: 'foo', clientId: 'abc' });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  try {
-    managementApi.getClient({ domain: 'foo', clientId: 'abc', clientSecret: 456 });
-  } catch (err) {
-    t.ok(err);
-    t.ok(err instanceof ArgumentError);
-  }
+    try {
+      managementApi.getClient({
+        domain: 'foo',
+        clientId: 'abc',
+        clientSecret: 456
+      });
+    } catch (err) {
+      expect(err).to.be.ok;
+      expect(err instanceof ArgumentError).to.be.ok;
+    }
 
-  managementApi.getClient({ domain: 'foo', accessToken: 'def' })
-    .then(function(auth0) {
-      t.ok(auth0);
-    });
+    managementApi
+      .getClient({ domain: 'foo', accessToken: 'def' })
+      .then(function(auth0) {
+        expect(auth0).to.be.ok;
+      });
+  });
 
-  t.end();
-});
+  it('managementApi#getClient should create a client for accessToken', function() {
+    managementApi
+      .getClient({ domain: 'foo', accessToken: 'def' })
+      .then(function(auth0) {
+        expect(auth0).to.be.ok;
+      });
+  });
 
-tape('managementApi#getClient should create a client for accessToken', function(t) {
-  managementApi.getClient({ domain: 'foo', accessToken: 'def' })
-    .then(function(auth0) {
-      t.ok(auth0);
-      t.end();
-    });
-});
+  it('managementApi#getClient should create a client for accessToken with headers', function() {
+    managementApi
+      .getClient({
+        domain: 'foo',
+        accessToken: 'def',
+        headers: { customHeader: 'custom' }
+      })
+      .then(function(auth0) {
+        expect(auth0).to.be.ok;
+        const keys = Object.keys(auth0);
+        keys.forEach(
+          key =>
+            auth0[key].resource &&
+            t.equal(
+              auth0[key].resource.restClient.options.headers.customHeader,
+              'custom'
+            )
+        );
+      });
+  });
 
-tape('managementApi#getClient should create a client for accessToken with headers', function(t) {
-  managementApi.getClient({ domain: 'foo', accessToken: 'def', headers: { customHeader: 'custom' } })
-    .then(function(auth0) {
-      t.ok(auth0);
-      const keys = Object.keys(auth0);
-      keys.forEach(key => auth0[key].resource && t.equal(auth0[key].resource.restClient.options.headers.customHeader, 'custom'));
-      t.end();
-    });
-});
-
-tape('managementApi#getClient should create a client for clientId/secret', function(t) {
-  nock('https://tenant.auth0cluster.com')
-    .post('/oauth/token')
-    .reply(200, {
+  it('managementApi#getClient should create a client for clientId/secret', function() {
+    nock('https://tenant.auth0cluster.com').post('/oauth/token').reply(200, {
       access_token: 'abc'
     });
 
-  managementApi.getClient({ domain: 'tenant.auth0cluster.com', clientId: 'abc', clientSecret: 'def' })
-    .then(function(auth0) {
-      t.ok(auth0);
-      t.end();
-    });
+    managementApi
+      .getClient({
+        domain: 'tenant.auth0cluster.com',
+        clientId: 'abc',
+        clientSecret: 'def'
+      })
+      .then(function(auth0) {
+        expect(auth0).to.be.ok;
+      });
+  });
 });
